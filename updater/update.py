@@ -1,6 +1,7 @@
 import sys
 import time
 import logging
+from urllib.parse import urlparse
 from datetime import datetime
 from collections import defaultdict
 
@@ -96,14 +97,12 @@ class DatasetValidator:
         return data
 
 
-class FootballDataCoUkDataset:
-    base_url = 'https://www.football-data.co.uk/mmz4281/'
+class Dataset:
 
-    def __init__(self, league, season, validation_config, file_path=None):
-        self.league = league
-        self.season = season
-        self.file_path = Path(file_path) if file_path is not None else Path(f'data/{self.league}/{season}.csv')
-        self.url = f'{self.base_url}{season}/{league}.csv'
+    def __init__(self, url, file_path, validation_config):
+        self.url = url
+        self.url_parsed = urlparse(self.url)
+        self.file_path = Path(file_path)
         self.downloader = CSVDataDownloader()
         self.validator = DatasetValidator(validation_config)
         self.validated = False
@@ -111,10 +110,10 @@ class FootballDataCoUkDataset:
 
     def __repr__(self):
         class_name = type(self).__name__
-        return f'{class_name}(League={self.league}, Season={self.season})'
+        return f'{class_name}(url={self.url}, file_path={self.file_path})'
     
     def __str__(self):
-        return f'{self.league} - {self.season}'
+        return f'{self.url_parsed.path}@{self.url_parsed.netloc}'
 
     def _download(self):
         self.data = self.downloader.download(self.url, encoding='unicode_escape')
@@ -176,9 +175,9 @@ def update():
         for season in season_range(FOOTBALL_CO_UK_CONFIG['start_date'], end_date):
             if season in season_dict[league] and season != max(season_dict[league]):
                 continue
-            dataset = FootballDataCoUkDataset(
-                league, 
-                season, 
+            dataset = Dataset(
+                url=f"{FOOTBALL_CO_UK_CONFIG['base_url']}{season}/{league}.csv",
+                file_path=f'data/{league}/{season}.csv',
                 validation_config=FOOTBALL_CO_UK_CONFIG['validation']
             )
             dataset.load(overwrite=True)

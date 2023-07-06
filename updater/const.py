@@ -1,6 +1,7 @@
 from datetime import datetime
 
 FOOTBALL_CO_UK_CONFIG = {
+    'base_url': 'https://www.football-data.co.uk/mmz4281/',
     'start_date': datetime(2000, 1, 1).date(),
     'leagues': (
         'E0', 'E1', 'E2', 'E3', 'EC', 'SC0', 'SC1', 'SC2', 'SC3', 'D1', 'D2',
