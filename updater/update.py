@@ -9,8 +9,6 @@ from pathlib import Path
 from const import FOOTBALL_CO_UK_CONFIG
 from dataset import Dataset
 
-from validator import PandasDatasetValidator
-
 file = Path(__file__).resolve()
 parent, root = file.parent, file.parents[1]
 sys.path.append(str(root))
@@ -48,7 +46,6 @@ def update():
             dataset = Dataset(
                 url=f"{FOOTBALL_CO_UK_CONFIG['base_url']}{season}/{league}.csv",
                 file_path=f'data/{league}/{season}.csv',
-                validator=PandasDatasetValidator,
                 validation_config=FOOTBALL_CO_UK_CONFIG['validation']
             )
             dataset.load(overwrite=True)

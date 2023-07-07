@@ -6,6 +6,7 @@ from urllib.parse import urlparse
 from urllib.error import HTTPError
 
 from downloader import CSVDataDownloader
+from validator import PandasDatasetValidator
 
 
 logger = logging.getLogger(__name__)
@@ -13,7 +14,7 @@ logger = logging.getLogger(__name__)
 
 class Dataset:
 
-    def __init__(self, url, file_path, downloader=CSVDataDownloader, validator=None, validation_config=None):
+    def __init__(self, url, file_path, downloader=CSVDataDownloader, validator=PandasDatasetValidator, validation_config=None):
         self.url = url
         self.url_parsed = urlparse(self.url)
         self.file_path = Path(file_path)
