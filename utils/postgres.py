@@ -6,6 +6,7 @@ from sqlalchemy import text
 
 logger = logging.getLogger(__name__)
 
+
 class PGDatabase:
 
     def __init__(self, host='localhost:8001', database='ml_football', user='postgres', password=os.getenv('POSTGRES_PASSWORD')):
