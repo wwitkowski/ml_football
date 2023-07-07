@@ -1,0 +1,11 @@
+FROM python:3.10.12-slim-bullseye
+
+WORKDIR /app
+COPY updater/requirements.txt requirements.txt
+
+RUN pip3 install -r requirements.txt
+
+COPY updater/ .
+COPY utils/ /utils/
+
+CMD ["python3", "-m" , "update"]
