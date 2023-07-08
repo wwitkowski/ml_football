@@ -1,4 +1,3 @@
-import os
 import logging
 import sqlalchemy
 from sqlalchemy import text
@@ -9,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class PGDatabase:
 
-    def __init__(self, host='localhost:8001', database='ml_football', user='postgres', password=os.getenv('POSTGRES_PASSWORD')):
+    def __init__(self, host, database, user, password):
         self.engine = self._create_engine(host, database, user, password)
 
     def _create_engine(self, host, database, user, password):

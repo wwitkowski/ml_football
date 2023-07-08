@@ -1,5 +1,6 @@
 version: '3.8'
 services:
+
   db:
     image: postgres:14.1-alpine
     restart: always
@@ -13,7 +14,16 @@ services:
       - ./db:/var/lib/postgresql/data
     container_name: postgres_database
 
-volumes:
-  db:
-    driver: local
-
+  updater:
+    build: 
+      context: .
+      dockerfile: Dockerfile-updater
+    depends_on:
+      - db
+    stdin_open: true
+    tty: true
+    environment:
+      - POSTGRES_HOST=db:5432
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    volumes: 
+      - ./data:/app/data

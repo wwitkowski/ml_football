@@ -1,3 +1,4 @@
+import os
 import sys
 import time
 import logging
@@ -34,7 +35,12 @@ def season_range(start_date, end_date):
 
 def update():
     end_date = datetime.today().date()
-    pg = PGDatabase()
+    pg = PGDatabase(
+        host=os.getenv('POSTGRES_HOST'),
+        database='ml_football',
+        user='postgres',
+        password=os.getenv('POSTGRES_PASSWORD')
+    )
     uploaded_seasons = pg.fetch('SELECT DISTINCT season, league FROM match')
     season_dict = defaultdict(list)
     for season, league in uploaded_seasons:
