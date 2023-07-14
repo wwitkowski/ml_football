@@ -1,8 +1,9 @@
+"""File for const variables and various configs"""
 from datetime import datetime
 
 FOOTBALL_CO_UK_CONFIG = {
     'base_url': 'https://www.football-data.co.uk/mmz4281/',
-    'start_date': datetime(2000, 1, 1).date(),
+    'start_date': '2000-01-01',
     'leagues': (
         'E0', 'E1', 'E2', 'E3', 'EC', 'SC0', 'SC1', 'SC2', 'SC3', 'D1', 'D2',
         'SP1', 'SP2', 'I1', 'I2', 'F1', 'F2', 'B1', 'N1', 'P1', 'T1', 'G1'

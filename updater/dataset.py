@@ -1,9 +1,11 @@
+"""Datasets"""
+
 import logging
 
-import pandas as pd
 from pathlib import Path
 from urllib.parse import urlparse
-from urllib.error import HTTPError
+from sqlalchemy import Engine
+import pandas as pd
 
 from downloader import CSVDataDownloader
 from validator import PandasDatasetValidator
@@ -13,34 +15,159 @@ logger = logging.getLogger(__name__)
 
 
 class Dataset:
+    """
+    A class to manage Dataset lifecycle from download to saving to hard drive or uploading to database
 
-    def __init__(self, url, file_path, downloader=CSVDataDownloader, validator=PandasDatasetValidator, validation_config=None):
+        Attributes:
+            url (str): Dataset's URL
+            file_path (str or Path): Dataset file path to download the data to or read from
+            data (list, dict, pd.DataFrame): Dataset's data
+            validated (bool): Flag indicating whether the dataset has benn successflly validated
+
+        Methods:
+            save(): Save data on hard drive
+            upload(): Upload data to database
+    
+    """
+
+    def __init__(self, url: str, file_path: str or Path, downloader, validator) -> None:
+        """
+        Initialize Dataset instance.
+
+        Parameters:
+            url (str): Dataset's URL
+            file_path (str or Path): Dataset file path to download the data to or read from
+            downloader: Downloader class to manage download process, has to implement download() function
+            validator: Validator class to manage data validation, has to implement validate() function
+
+        Returns:
+            None
+        """
         self.url = url
-        self.url_parsed = urlparse(self.url)
-        self.file_path = Path(file_path)
-        self.downloader = downloader()
-        self.validator = validator(validation_config) if validator is not None else None
-        self.validated = False
+        self.file_path = file_path if isinstance(file_path, Path) else Path(file_path)
         self.data = None
+        self.validated = False
+        self._downloader = downloader
+        self._validator = validator
+        self._url_parsed = urlparse(self.url)
 
-    def __repr__(self):
+    def __repr__(self) -> str:
         class_name = type(self).__name__
         return f'{class_name}(url={self.url}, file_path={self.file_path})'
     
-    def __str__(self):
-        return f'{self.url_parsed.path}@{self.url_parsed.netloc}'
+    def __str__(self) -> str:
+        return f'{self._url_parsed.path}@{self._url_parsed.netloc}'
 
-    def _download(self):
-        self.data = self.downloader.download(self.url, encoding='unicode_escape')
+    def _download(self, **kwargs) -> None:
+        """
+        Call Downloader's download method and download data.
 
-    def _validate(self):
-        self.data = self.validator.validate(self.data)
+        Returns:
+            None
+        """
+        self.data = self._downloader.download(self.url, **kwargs)
 
-    def _save(self):
+    def _validate(self) -> None:
+        """
+        Call Validator's validate method and validate data.
+
+        Returns:
+            None
+        """
+        logger.info('Validating dataset: %s', self)
+        try:
+            self.data = self._validator.validate(self.data)
+            self.validated = True
+        except AssertionError:
+            logger.error('Dataset %s not validated.', self)
+
+    def _read(self) -> None:
+        """
+        Read data from file.
+
+        Returns:
+            None
+        """
+        logger.info('Reading from file %s: %s', self, self.file_path)
+        try:
+            self.data = pd.read_csv(self.file_path)
+        except Exception:
+            logger.exception('Error when loading the file: ')
+
+    def save(self) -> None:
+        """
+        Save dataset to hard drive.
+
+        Returns:
+            None
+        """
         self.file_path.parent.mkdir(parents=True, exist_ok=True)
-        self.data.to_csv(self.file_path, index=False)
+        logger.info('Saving dataset: %s, path: %s', self, self.file_path)
+        if isinstance(self.data, pd.DataFrame):
+            self.data.to_csv(self.file_path, index=False)
+        else:
+             raise NotImplementedError('Saving data only implemented for pandas DataFrame objects')   
 
-    def parse_dates(self, col, date_formats):
+    def upload(self, conn: Engine, table: str, **kwargs) -> None:
+        """
+        Upload data to database.
+
+        Parameters:
+            conn: database connection
+
+        Returns:
+            None
+        """
+        if isinstance(self.data, pd.DataFrame):
+            logger.info('Uploading dataset: %s', self)
+            self.data.to_sql(table, conn, **kwargs)
+            logger.info('Uploading succesful')
+        else:
+            raise NotImplementedError('Uploading data only implemented for pandas DataFrame objects')   
+
+
+class CSVDataset(Dataset):
+    """
+    A class for managing csv dataset.
+
+    Attributes:
+        data (list, dict, pd.DataFrame): Dataset's data
+        validation_config (Optional[dict]): Validation configuration parameters
+
+    Methods:
+        parse_dates(col, date_formats): Convert a pandas DataFrame column to datetime
+
+    """
+
+    def __init__(self, url: str, file_path: str or Path, validation_config: dict = None) -> None:
+        """
+        Initialize CSVDataset class
+
+        Parameters:
+            url (str): Dataset's URL
+            file_path (str or Path): Dataset file path to download the data to or read from
+            validation_config (dict): Data validation configuration
+        
+        Retruns:
+            None
+        """
+        downloader = CSVDataDownloader()
+        validator = PandasDatasetValidator(validation_config) if validation_config else None
+        super().__init__(url, file_path, downloader, validator)
+
+    def parse_dates(self, col: str, date_formats: list[str]) -> None:
+        """
+        Convert a pandas DataFrame column to datetime using provided string formats.
+
+        Raise ValueError exception when none of provided date_formats matches the date string.
+
+        Parameters:
+            col (str): Name of the column to be converted
+            date_formats (list[str]): List of the formats to try to match to the dates in column
+
+        Returns:
+            None
+        """
         for date_format in date_formats:
             try:
                 self.data[col] = pd.to_datetime(self.data[col], format=date_format)
@@ -49,32 +176,20 @@ class Dataset:
                 pass
         raise ValueError(f'None of {date_formats} match {col} date format')
     
-    def load(self, overwrite=False):
-        if not self.file_path.is_file() or overwrite==True:
-            logger.info('Downloading dataset: %s, URL: %s', self, self.url)
-            try:
-                self._download()
-            except HTTPError as e:
-                if e.code in (300, 404):
-                    logger.warning('Dataset %s does not exist', self)
-                    return
-                else:
-                    raise
-            if self.validator is not None:
-                logger.info('Validating dataset: %s', self)
-                try:
-                    self._validate()
-                    self.validated = True
-                except AssertionError:
-                    logger.error('Dataset %s not validated.', self)
-                    return
-            logger.info('Saving dataset: %s, path: %s', self, self.file_path)
-            self._save()
-            return
-        logger.info('Reading from file %s: %s', self, self.file_path)
-        self.data = pd.read_csv(self.file_path)
+    def load(self) -> None:
+        """
+        Load data from internet or hard drive.
 
-    def upload(self, conn, table, **kwargs):
-        logger.info('Uploading dataset: %s', self)
-        self.data.to_sql(table, conn, **kwargs)
-        logger.info('Uploading succesful')
+        Returns:
+            None
+        """
+        if not self.file_path.is_file():
+            logger.info('Downloading dataset: %s, URL: %s', self, self.url)
+            self._download()
+            if self._validator is not None:
+                self._validate()
+        else:
+            self._read()
+
+        
+
