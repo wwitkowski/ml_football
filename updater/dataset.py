@@ -54,7 +54,7 @@ class Dataset:
     def __repr__(self) -> str:
         class_name = type(self).__name__
         return f'{class_name}(url={self.url}, file_path={self.file_path})'
-    
+
     def __str__(self) -> str:
         return f'{self._url_parsed.path}@{self._url_parsed.netloc}'
 
@@ -91,7 +91,7 @@ class Dataset:
         logger.info('Reading from file %s: %s', self, self.file_path)
         try:
             self.data = pd.read_csv(self.file_path)
-        except Exception:
+        except OSError:
             logger.exception('Error when loading the file: ')
 
     def save(self) -> None:
@@ -106,7 +106,7 @@ class Dataset:
         if isinstance(self.data, pd.DataFrame):
             self.data.to_csv(self.file_path, index=False)
         else:
-             raise NotImplementedError('Saving data only implemented for pandas DataFrame objects')   
+            raise NotImplementedError('Saving data only implemented for pandas DataFrame objects')
 
     def upload(self, conn: Engine, table: str, **kwargs) -> None:
         """
@@ -123,8 +123,7 @@ class Dataset:
             self.data.to_sql(table, conn, **kwargs)
             logger.info('Uploading succesful')
         else:
-            raise NotImplementedError('Uploading data only implemented for pandas DataFrame objects')   
-
+            raise NotImplementedError('Uploading data only implemented for pandas DataFrame objects')
 
 class CSVDataset(Dataset):
     """
@@ -175,7 +174,7 @@ class CSVDataset(Dataset):
             except ValueError:
                 pass
         raise ValueError(f'None of {date_formats} match {col} date format')
-    
+
     def load(self) -> None:
         """
         Load data from internet or hard drive.
@@ -190,6 +189,3 @@ class CSVDataset(Dataset):
                 self._validate()
         else:
             self._read()
-
-        
-

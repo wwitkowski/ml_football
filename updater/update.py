@@ -67,7 +67,6 @@ def update() -> None:
     for season, league in uploaded_seasons:
         season_dict[league].append(season)
     for league in FOOTBALL_CO_UK_CONFIG['leagues']:
-        
         for season in season_range(start_date, end_date):
             if season in season_dict[league] and season != max(season_dict[league]):
                 continue

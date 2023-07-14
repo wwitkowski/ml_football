@@ -50,7 +50,7 @@ class PGDatabase:
         """
         logger.info('Creating DB engine..')
         return sqlalchemy.create_engine(f'postgresql+psycopg2://{user}:{password}@{host}/{database}')
-    
+
     def execute(self, query: str):
         """
         Execute query and return the result.
@@ -65,7 +65,7 @@ class PGDatabase:
             logger.info('Executing query: %s', query)
             result = conn.execute(text(query))
         return result
-    
+
     def fetch(self, query) -> dict:
         """
         Fetch data from database using provided query.

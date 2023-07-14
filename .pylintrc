@@ -10,4 +10,5 @@ max-line-length=120
 [MESSAGES_CONTROL]
 disable=
     too-few-public-methods,
-    too-many-lines
+    too-many-lines,
+    import-error

@@ -42,9 +42,9 @@ class PandasDatasetValidator:
         Returns:
             None
         """
-        assert all([col in data.columns for col in valid_columns])
+        assert all((col in data.columns for col in valid_columns))
 
-    def _validate_rows(self, data:pd.DataFrame, threshold: float, valid_columns: list[str]) -> None:
+    def _validate_rows(self, data:pd.DataFrame, valid_columns: list[str], threshold: float = None) -> None:
         """
         Validate DataFrame's rows.
 
@@ -53,8 +53,8 @@ class PandasDatasetValidator:
 
         Parameters:
             data (pd.DataFrame): data to be validated
-            threshold (float): percente of na values below which the rows is going to be dropped
             valid_columns (list[str]): list of columns that need to have non-na value
+            threshold (float): percente of na values below which the rows is going to be dropped
 
         Returns:
             None
@@ -79,13 +79,13 @@ class PandasDatasetValidator:
         Returns:
             None
         """
-        for col, dtype in self.config['valid_dtypes'].items():
+        for col, dtype in valid_dtypes.items():
             if col not in data.columns:
                 continue
             if dtype in ('int64', 'float64'):
                 data.loc[:, col] = pd.to_numeric(data[col], errors='coerce')
         return data
-    
+
     def validate(self, data:pd.DataFrame) -> pd.DataFrame:
         """
         Validate DataFrame.
@@ -96,7 +96,10 @@ class PandasDatasetValidator:
         Returns:
             data (pd.DataFrame): Validated DataFrame
         """
-        self._validate_columns(data)
-        data = self._validate_rows(data)
-        data = self._validate_dtypes(data)
+        valid_column = self.config['columns']['valid_columns']
+        valid_dtypes = self.config['valid_dtypes']
+        threshold = self.config['rows'].get('threshold')
+        self._validate_columns(data, valid_column)
+        data = self._validate_rows(data, valid_column, threshold)
+        data = self._validate_dtypes(data, valid_dtypes)
         return data

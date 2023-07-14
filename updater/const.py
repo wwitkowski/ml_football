@@ -1,5 +1,4 @@
 """File for const variables and various configs"""
-from datetime import datetime
 
 FOOTBALL_CO_UK_CONFIG = {
     'base_url': 'https://www.football-data.co.uk/mmz4281/',
