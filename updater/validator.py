@@ -1,5 +1,7 @@
 """Validators"""
 
+from typing import Optional
+
 import pandas as pd
 
 
@@ -44,7 +46,12 @@ class PandasDatasetValidator:
         """
         assert all((col in data.columns for col in valid_columns))
 
-    def _validate_rows(self, data:pd.DataFrame, valid_columns: list[str], threshold: float = None) -> None:
+    def _validate_rows(
+            self, 
+            data: pd.DataFrame, 
+            valid_columns: list[str], 
+            threshold: Optional[float] = None
+        ) -> pd.DataFrame:
         """
         Validate DataFrame's rows.
 
@@ -57,14 +64,14 @@ class PandasDatasetValidator:
             threshold (float): percente of na values below which the rows is going to be dropped
 
         Returns:
-            None
+            data (pd.DataFrame): Validated data
         """
         if threshold:
             data = data.dropna(thresh=int(threshold*len(data.columns)))
         data = data.dropna(subset=valid_columns)
         return data
 
-    def _validate_dtypes(self, data:pd.DataFrame, valid_dtypes: dict) -> None:
+    def _validate_dtypes(self, data: pd.DataFrame, valid_dtypes: dict) -> pd.DataFrame:
         """
         Validate DataFrame's dtypes.
 
@@ -77,7 +84,7 @@ class PandasDatasetValidator:
             valid_dtypes (dict): column-dtype pairs specifying correct dtype for a column
 
         Returns:
-            None
+            data (pd.DataFrame): Validated data
         """
         for col, dtype in valid_dtypes.items():
             if col not in data.columns:
@@ -86,7 +93,7 @@ class PandasDatasetValidator:
                 data.loc[:, col] = pd.to_numeric(data[col], errors='coerce')
         return data
 
-    def validate(self, data:pd.DataFrame) -> pd.DataFrame:
+    def validate(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Validate DataFrame.
 

@@ -30,7 +30,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def season_range(start_date: datetime, end_date:datetime) -> Iterator[str]:
+def season_range(start_date: datetime, end_date: datetime) -> Iterator[str]:
     """
     Yields the Fotballdata Co Uk seasons representations between given dates.
 

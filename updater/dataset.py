@@ -1,6 +1,7 @@
 """Datasets"""
 
 import logging
+from typing import Optional
 
 from pathlib import Path
 from urllib.parse import urlparse
@@ -138,7 +139,7 @@ class CSVDataset(Dataset):
 
     """
 
-    def __init__(self, url: str, file_path: str or Path, validation_config: dict = None) -> None:
+    def __init__(self, url: str, file_path: str or Path, validation_config: Optional[dict] = None) -> None:
         """
         Initialize CSVDataset class
 

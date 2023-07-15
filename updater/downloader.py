@@ -1,5 +1,7 @@
 """Downloaders"""
 
+from typing import Optional
+
 import requests
 import pandas as pd
 
@@ -67,7 +69,7 @@ class CSVDataDownloader:
         data = pd.DataFrame(data=lines, columns=header)
         return data
 
-    def download(self, url: str, encoding: str = 'utf8', **kwargs) -> pd.DataFrame:
+def download(self, url: str, encoding: Optional[str] = 'utf8', **kwargs) -> pd.DataFrame:
         """
         Download data. If pandas read_csv() fails download using requests.
 

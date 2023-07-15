@@ -66,7 +66,7 @@ class PGDatabase:
             result = conn.execute(text(query))
         return result
 
-    def fetch(self, query) -> dict:
+    def fetch(self, query: str) -> dict:
         """
         Fetch data from database using provided query.
 
