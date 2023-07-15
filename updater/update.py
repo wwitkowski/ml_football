@@ -55,17 +55,17 @@ def update() -> None:
         None
     """
     end_date = datetime.today().date()
-    # pg = PGDatabase(
-    #     host=os.environ['POSTGRES_HOST'],
-    #     database='ml_football',
-    #     user='postgres',
-    #     password=os.environ['POSTGRES_PASSWORD']
-    # )
-    # uploaded_seasons = pg.fetch('SELECT DISTINCT season, league FROM match')
-    season_dict = defaultdict(list)
+    pg = PGDatabase(
+        host=os.environ['POSTGRES_HOST'],
+        database='ml_football',
+        user='postgres',
+        password=os.environ['POSTGRES_PASSWORD']
+    )
+    uploaded_seasons = pg.fetch('SELECT DISTINCT season, league FROM match')
+    season_dict: defaultdict = defaultdict(list)
     start_date = datetime.strptime(FOOTBALL_CO_UK_CONFIG['start_date'], '%Y-%m-%d').date()
-    # for season, league in uploaded_seasons:
-    #     season_dict[league].append(season)
+    for season, league in uploaded_seasons:
+        season_dict[league].append(season)
     for league in FOOTBALL_CO_UK_CONFIG['leagues']:
         for season in season_range(start_date, end_date):
             if season in season_dict[league] and season != max(season_dict[league]):

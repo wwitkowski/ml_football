@@ -35,7 +35,7 @@ class Dataset:
     def __init__(
             self, 
             url: str, 
-            file_path: str or Path, 
+            file_path: str | Path, 
             downloader: Type[CSVDataDownloader], 
             validator: Type[PandasDatasetValidator]
         ) -> None:
@@ -146,7 +146,7 @@ class CSVDataset(Dataset):
 
     """
 
-    def __init__(self, url: str, file_path: str or Path, validation_config: Optional[dict] = None) -> None:
+    def __init__(self, url: str, file_path: str | Path, validation_config: Optional[dict] = None) -> None:
         """
         Initialize CSVDataset class
 
