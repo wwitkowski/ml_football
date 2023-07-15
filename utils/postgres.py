@@ -3,6 +3,7 @@
 import logging
 import sqlalchemy
 from sqlalchemy import text
+from typing import Any
 
 
 logger = logging.getLogger(__name__)
@@ -51,7 +52,7 @@ class PGDatabase:
         logger.info('Creating DB engine..')
         return sqlalchemy.create_engine(f'postgresql+psycopg2://{user}:{password}@{host}/{database}')
 
-    def execute(self, query: str):
+    def execute(self, query: str) -> Any:
         """
         Execute query and return the result.
 

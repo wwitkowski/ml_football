@@ -1,7 +1,7 @@
 """Datasets"""
 
 import logging
-from typing import Optional
+from typing import Optional, Type, Callable, ParamSpec, Any
 
 from pathlib import Path
 from urllib.parse import urlparse
@@ -12,6 +12,7 @@ from downloader import CSVDataDownloader
 from validator import PandasDatasetValidator
 
 
+P = ParamSpec("P")
 logger = logging.getLogger(__name__)
 
 
@@ -31,7 +32,13 @@ class Dataset:
     
     """
 
-    def __init__(self, url: str, file_path: str or Path, downloader, validator) -> None:
+    def __init__(
+            self, 
+            url: str, 
+            file_path: str or Path, 
+            downloader: Type[CSVDataDownloader], 
+            validator: Type[PandasDatasetValidator]
+        ) -> None:
         """
         Initialize Dataset instance.
 
@@ -59,7 +66,7 @@ class Dataset:
     def __str__(self) -> str:
         return f'{self._url_parsed.path}@{self._url_parsed.netloc}'
 
-    def _download(self, **kwargs) -> None:
+    def _download(self, **kwargs: Callable[P, Any]) -> None:
         """
         Call Downloader's download method and download data.
 
@@ -109,7 +116,7 @@ class Dataset:
         else:
             raise NotImplementedError('Saving data only implemented for pandas DataFrame objects')
 
-    def upload(self, conn: Engine, table: str, **kwargs) -> None:
+    def upload(self, conn: Engine, table: str, **kwargs: Callable[P, Any]) -> None:
         """
         Upload data to database.
 
