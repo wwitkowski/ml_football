@@ -23,7 +23,7 @@ try:
 except ValueError: # Already removed
     pass
 
-from utils.postgres import PGDatabase
+from utils.database import PGDatabase
 
 
 logging.basicConfig(level=logging.INFO)

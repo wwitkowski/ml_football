@@ -9,7 +9,15 @@ from typing import Any
 logger = logging.getLogger(__name__)
 
 
-class PGDatabase:
+def create_postgres_engine(conn_conf: dict | str) -> sqlalchemy.Engine:
+    if isinstance(conn_conf, dict):
+        conn_str = 'postgresql+psycopg2://{user}:{password}@{host}/{database}'.format(**conn_conf)
+    else:
+        conn_str = conn_conf
+    return sqlalchemy.create_engine(conn_str)
+
+
+class Database:
     """
     Class wrapping the Postgres connection and query executions.
 
@@ -21,36 +29,17 @@ class PGDatabase:
         fetch(query: str): Fetch data from database.
     """
 
-    def __init__(self, host: str, database: str, user: str, password: str) -> None:
+    def __init__(self, engine: sqlalchemy.Engine) -> None:
         """
         Initialize PGDatabase class. Create connection engine.
 
         Parameters:
-            host (str): Database hostname
-            database (str): Database name
-            user (str): Database username used to connect
-            password (str): Database username's password
+            engine (sqlalchemy.Engine): Database engine
 
         Returns:
             None
         """
-        self.engine = self._create_engine(host, database, user, password)
-
-    def _create_engine(self, host: str, database: str, user: str, password: str) -> sqlalchemy.Engine:
-        """
-        Create SQLAlchemy connection engine.
-
-        Parameters:
-            host (str): Database hostname
-            database (str): Database name
-            user (str): Database username used to connect
-            password (str): Database username's password
-        
-        Returns:
-            None
-        """
-        logger.info('Creating DB engine..')
-        return sqlalchemy.create_engine(f'postgresql+psycopg2://{user}:{password}@{host}/{database}')
+        self.engine = engine
 
     def execute(self, query: str) -> Any:
         """
@@ -67,7 +56,7 @@ class PGDatabase:
             result = conn.execute(text(query))
         return result
 
-    def fetch(self, query: str) -> dict:
+    def fetch(self, query: str) -> list[tuple]:
         """
         Fetch data from database using provided query.
 
@@ -75,6 +64,6 @@ class PGDatabase:
             query (str): Query used to fetch data
 
         Returns:
-            result (dict): Fetched data
+            result (list[tuple]): Fetched data
         """
         return self.execute(query).fetchall()
