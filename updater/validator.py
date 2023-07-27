@@ -1,11 +1,19 @@
 """Validators"""
 
+from abc import ABC, abstractmethod
 from typing import Optional
 
 import pandas as pd
 
 
-class PandasDatasetValidator:
+class DatasetValidator(ABC):
+
+    @abstractmethod
+    def validate(self, data): # pragma: no cover
+        pass
+
+
+class PandasDatasetValidator(DatasetValidator):
     """
     A class to validate Pandas data.
 
@@ -29,8 +37,11 @@ class PandasDatasetValidator:
             None
         """
         self.config = config
+        self._valid_columns = self.config.get('columns', {}).get('valid_columns', [])
+        self._valid_dtypes = self.config.get('valid_dtypes', {})
+        self._threshold = self.config.get('rows', {}).get('threshold')
 
-    def _validate_columns(self, data: pd.DataFrame, valid_columns: list[str]) -> None:
+    def _validate_columns(self, data: pd.DataFrame) -> None:
         """
         Validate DataFrame's columns. 
         
@@ -39,19 +50,13 @@ class PandasDatasetValidator:
 
         Parameters:
             data (pd.DataFrame): data to be validated
-            valid_columns (list[str]): list of columns that have to be in the DataFrame
 
         Returns:
             None
         """
-        assert all((col in data.columns for col in valid_columns))
+        assert all((col in data.columns for col in self._valid_columns))
 
-    def _validate_rows(
-            self, 
-            data: pd.DataFrame, 
-            valid_columns: list[str], 
-            threshold: Optional[float] = None
-        ) -> pd.DataFrame:
+    def _validate_rows(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Validate DataFrame's rows.
 
@@ -60,18 +65,19 @@ class PandasDatasetValidator:
 
         Parameters:
             data (pd.DataFrame): data to be validated
-            valid_columns (list[str]): list of columns that need to have non-na value
-            threshold (float): percente of na values below which the rows is going to be dropped
 
         Returns:
             data (pd.DataFrame): Validated data
         """
-        if threshold:
-            data = data.dropna(thresh=int(threshold*len(data.columns)))
-        data = data.dropna(subset=valid_columns)
+        if self._threshold:
+            data = data.dropna(thresh=len(data.columns) - round(self._threshold*len(data.columns))).copy()
+        if self._valid_columns:
+            data = data.dropna(subset=self._valid_columns).copy()
+        else:
+            data = data.dropna(how='all').copy()
         return data
 
-    def _validate_dtypes(self, data: pd.DataFrame, valid_dtypes: dict) -> pd.DataFrame:
+    def _validate_dtypes(self, data: pd.DataFrame) -> pd.DataFrame:
         """
         Validate DataFrame's dtypes.
 
@@ -81,16 +87,17 @@ class PandasDatasetValidator:
 
         Parameters:
             data (pd.DataFrame): data to be validated
-            valid_dtypes (dict): column-dtype pairs specifying correct dtype for a column
 
         Returns:
             data (pd.DataFrame): Validated data
         """
-        for col, dtype in valid_dtypes.items():
-            if col not in data.columns:
-                continue
-            if dtype in ('int64', 'float64'):
-                data.loc[:, col] = pd.to_numeric(data[col], errors='coerce')
+        specific_dtypes = {}
+        for col, dtype in self._valid_dtypes.items():
+            if dtype == 'numeric':
+                data[col] = pd.to_numeric(data[col], errors='coerce')
+            else:
+                specific_dtypes[col] = dtype
+        data = data.astype(specific_dtypes)
         return data
 
     def validate(self, data: pd.DataFrame) -> pd.DataFrame:
@@ -103,10 +110,9 @@ class PandasDatasetValidator:
         Returns:
             data (pd.DataFrame): Validated DataFrame
         """
-        valid_column = self.config['columns']['valid_columns']
-        valid_dtypes = self.config['valid_dtypes']
-        threshold = self.config['rows'].get('threshold')
-        self._validate_columns(data, valid_column)
-        data = self._validate_rows(data, valid_column, threshold)
-        data = self._validate_dtypes(data, valid_dtypes)
+        self._validate_columns(data)
+        data = self._validate_rows(data)
+
+        if self._valid_dtypes:
+            data = self._validate_dtypes(data)
         return data
