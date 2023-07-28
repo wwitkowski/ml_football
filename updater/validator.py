@@ -1,12 +1,12 @@
 """Validators"""
 
 from abc import ABC, abstractmethod
-from typing import Optional
 
 import pandas as pd
 
 
 class DatasetValidator(ABC):
+    """Abstract Validator class"""
 
     @abstractmethod
     def validate(self, data): # pragma: no cover

@@ -33,34 +33,35 @@ dtypes_config = {
 }
 
 
-def test_pandas_dataset_validator_init():
+def test_pandas_dataset_validator_init() -> None:
     val = PandasDatasetValidator(cols_config)
     assert val.config == cols_config
 
 
-# Test cases
-def test_validate_columns():
+def test_validate_columns() -> None:
     validator = PandasDatasetValidator(cols_config)
-    # Test case 1: Valid columns should pass the validation
+
     validated_data = validator.validate(data)
     expected_data = data.drop(index=[3, 4])
     assert validated_data.sort_index().equals(expected_data.sort_index())
 
-    # Test case 2: Missing column 'A' should raise AssertionError
+
     invalid_data = data.drop(columns=['A'])
     with pytest.raises(AssertionError):
         validator.validate(invalid_data)
 
-def test_validate_rows():
+
+def test_validate_rows() -> None:
     validator = PandasDatasetValidator(threshold_config)
-    # Test case 1: Rows with more than 50% NA values should be dropped
+
     validated_data = validator.validate(data)
     expected_data = data.drop(index=[0, 4])
     assert validated_data.sort_index().equals(expected_data.sort_index())
 
-def test_validate_dtypes():
+
+def test_validate_dtypes() -> None:
     validator = PandasDatasetValidator(dtypes_config)
-    # Test case 1: Columns 'A' and 'B' should be converted to int64
+
     validated_data = validator.validate(data)
     expected_data = data.drop(index=4)
     expected_data = expected_data.astype({'A': 'float64', 'B': 'int64', 'C': 'float64'})
