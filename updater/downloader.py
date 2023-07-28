@@ -28,7 +28,7 @@ class CSVDataDownloader:
         download(url, encoding, **kwargs): download csv data
     """
 
-    def __init__(self, encoding: Optional[str] = 'utf8') -> None:
+    def __init__(self, encoding: str = 'utf8') -> None:
         """
         init csv downloader class
 
