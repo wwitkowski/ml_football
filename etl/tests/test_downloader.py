@@ -1,9 +1,9 @@
 from typing import Iterator, Callable, ParamSpec, Any
 import pytest
-from unittest.mock import patch
+from unittest.mock import patch, Mock
 import pandas as pd
 
-from updater.downloader import CSVDataDownloader
+from etl.downloader import CSVDataDownloader
 
 
 
@@ -11,7 +11,7 @@ P = ParamSpec("P")
 
 
 @pytest.fixture(autouse=True)
-def patch_read_csv():
+def patch_read_csv() -> Mock:
     """mock pandas.read_csv"""
     with patch('pandas.read_csv') as mock_read_csv:
         yield mock_read_csv
@@ -36,7 +36,7 @@ def test_csv_downloader_valid_csv(patch_read_csv) -> None:
     patch_read_csv.return_value = expected_data
     downloader = CSVDataDownloader()
     data = downloader.download(url)
-    assert data.sort_index().equals(expected_data.sort_index())
+    pd.testing.assert_frame_equal(data.reset_index(drop=True), expected_data.reset_index(drop=True))
 
 
 def test_csv_downloader_bad_csv(patch_requests_get, patch_read_csv) -> None:
@@ -57,7 +57,6 @@ def test_csv_downloader_bad_csv(patch_requests_get, patch_read_csv) -> None:
     patch_requests_get.return_value.iter_lines.return_value = bad_csv_content()
     patch_read_csv.side_effect = pd.errors.ParserError()
     
-    #with patch('pandas.read_csv', side_effect=pd.errors.ParserError()):
     downloader = CSVDataDownloader(encoding='utf-8')
     data = downloader.download(url)
-    assert data.sort_index().equals(expected_data.sort_index())
+    pd.testing.assert_frame_equal(data.reset_index(drop=True), expected_data.reset_index(drop=True))

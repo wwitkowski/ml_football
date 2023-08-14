@@ -1,7 +1,7 @@
 """Downloaders"""
 
 from abc import ABC, abstractmethod
-from typing import Optional, Callable, ParamSpec, Any
+from typing import Callable, ParamSpec, Any
 
 import requests
 import pandas as pd
@@ -25,12 +25,12 @@ class CSVDataDownloader:
     Class also handles csv with unnecessary commas if present in file which causes read_csv() to fail.
 
     Methods:
-        download(url, encoding, **kwargs): download csv data
+        download(url, encoding, **kwargs): Download csv data
     """
 
     def __init__(self, encoding: str = 'utf8') -> None:
         """
-        init csv downloader class
+        Init csv downloader class.
 
         Parameters:
             encoding (str): Bytes encoding method

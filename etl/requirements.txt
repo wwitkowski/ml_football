@@ -3,3 +3,4 @@ pathlib>=1.0,<2
 psycopg2-binary>=2.9,<3
 SQLAlchemy>=2.0,<3
 requests>=2.31,<3
+PyYAML>=6.0,<7
