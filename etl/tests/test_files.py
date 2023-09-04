@@ -37,6 +37,6 @@ def test_read(mock_file):
 
 def test_save(mock_file):
     data = pd.DataFrame({"column1": [1, 2, 3], "column2": ["A", "B", "C"]})
-    with patch("pandas.DataFrame.to_csv") as mock_to_csv:
+    with patch("pandas.DataFrame.to_csv") as mock_to_csv, patch("pathlib.Path.mkdir") as mock_mkdir:
         mock_file.save(data, index=False)
         mock_to_csv.assert_called_once_with(mock_file.path, index=False)

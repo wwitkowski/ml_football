@@ -125,8 +125,9 @@ class FootballDataCoUK(Dataset):
             data (pd.DataFrame): Downloaded and preprocessed valid data
         """
         dataframes = []
+        start_date = latest_date or datetime.strptime(self.config['default_start_date'], "%Y-%m-%d")
         for league in self.config['leagues']:
-            for season in self._generate_seasons(latest_date, datetime.today().date()):
+            for season in self._generate_seasons(start_date, datetime.today().date()):
                 filepath = f'data/{self.__class__.__name__}/{season}/{league}.csv'
                 file = self._file_manager(filepath)
                 if file.exists():

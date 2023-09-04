@@ -50,10 +50,10 @@ class MockFileExists(File):
     def exists(self):
         return True
     
-    def read(self, **kwargs):
+    def read(self, **kwargs): # pragma: no cover
         pass
     
-    def save(self, data, **kwargs):
+    def save(self, data, **kwargs): # pragma: no cover
         pass
 
 
@@ -65,7 +65,7 @@ class MockFileNotExists(File):
     def exists(self):
         return False
     
-    def read(self, **kwargs):
+    def read(self, **kwargs): # pragma: no cover
         pass
     
     def save(self, data, **kwargs):
@@ -78,14 +78,26 @@ def mock_data_downloader():
     return mock
 
 
+def test_generate_seasons():
+    football_data = FootballDataCoUK(config)
+    start_date = datetime(2023, 1, 1).date()
+    end_date = datetime(2023, 12, 31).date()
+    seasons = football_data._generate_seasons(start_date, end_date)
+    assert list(seasons) == ['2223', '2324', '2425']
+    start_date = datetime(2020, 1, 1).date()
+    end_date = datetime(2022, 10, 23).date()
+    seasons = football_data._generate_seasons(start_date, end_date)
+    assert list(seasons) == ['1920', '2021', '2122', '2223', '2324']
+
+
 def test_download_data_valid_df(mock_data_downloader):
     expected_df = pd.DataFrame({
-        'col1': [2, 3, np.nan],
-        'column2': ['B', 'C', np.nan],
-        'match_date': [datetime(2023, 8, 2), datetime(2023, 8, 3), datetime(2023, 8, 5)],
-        'season': ['2324', '2324', '2324']
+        'col1': [2, 3, np.nan]*3,
+        'column2': ['B', 'C', np.nan]*3,
+        'match_date': [datetime(2023, 8, 2), datetime(2023, 8, 3), datetime(2023, 8, 5)]*3,
+        'season': ['2223', '2223', '2223', '2324', '2324', '2324', '2425', '2425', '2425']
     })
-    latest_date = datetime(2023, 8, 1)
+    latest_date = datetime(2023, 8, 1).date()
     mock_data_downloader.download.return_value = valid_df
 
     football_data = FootballDataCoUK(config)

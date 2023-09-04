@@ -1,5 +1,5 @@
 base_url: "https://www.football-data.co.uk/mmz4281/"
-default_start_date: ""
+default_start_date: "2001-01-01"
 leagues:
   - "E0"
   # - "E1"
