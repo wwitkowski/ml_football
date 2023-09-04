@@ -62,9 +62,9 @@ class FootballDataCoUK(Dataset):
         Yields:
             season (str): Season string representation
         """
-        for i in range(end_date.year - start_date.year + 1):
-            year = start_date.replace(year=start_date.year + i).strftime('%y')
-            year_plus_one = start_date.replace(year=start_date.year + i + 1).strftime('%y')
+        for i in range(end_date.year - start_date.year + 3):
+            year = start_date.replace(year=start_date.year + i - 1).strftime('%y')
+            year_plus_one = start_date.replace(year=start_date.year + i).strftime('%y')
             yield f'{year}{year_plus_one}'
 
     def _is_valid_data(self, data: pd.DataFrame) -> bool:
@@ -131,20 +131,23 @@ class FootballDataCoUK(Dataset):
                 file = self._file_manager(filepath)
                 if file.exists():
                     continue
+                logger.info('DOWNLOADING: %s - %s', league, season)
                 try:
                     raw_df = self._downloader.download(f"{self.config['base_url']}{season}/{league}.csv")
                 except HTTPError as err:
                     if err.code in (300, 404):
+                        logger.info('Data %s - %s does not exist.', league, season)
                         continue
                     else:
                         raise
                 if not self._is_valid_data(raw_df):
+                    logger.info('Data %s - %s is not valid.', league, season)
                     continue
                 preprocessed_df = self._preprocess_data(raw_df, season)
-                file.save(filepath)
+                file.save(preprocessed_df, index=False)
                 dataframes.append(preprocessed_df)
         if not dataframes:
             return pd.DataFrame()
         data = pd.concat(dataframes)
-        data = data[data['match_date'] > latest_date]
+        data = data[data['match_date'].dt.date > latest_date]
         return data

@@ -82,5 +82,5 @@ class CSVFile:
         Returns:
             None
         """
-        self.path.mkdir(parents=True, exist_ok=True)
+        self.path.parent.mkdir(parents=True, exist_ok=True)
         data.to_csv(self.path, **kwargs)

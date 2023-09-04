@@ -7,11 +7,11 @@ import yaml
 import pandas as pd
 
 import sqlalchemy
+from sqlalchemy import text
 from etl.dataset import Dataset, FootballDataCoUK
 from database.database import Session
 from etl.merging import DataMerger
 
-DEFAULT_START_DATE = '1900-01-01'
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
@@ -21,7 +21,6 @@ class ETL:
     Class responsible for running the ETL process for added datasets - Dataset classes.
 
     Attributes:
-        default_start_date (str): Default date filter datasets on
         data_merger (DataMerger): DataMerger class responsible for merging Datasets
         datasets (list[Dataset]): List of Datasets
 
@@ -34,22 +33,22 @@ class ETL:
 
     def __init__(
             self, 
-            db_connection: sqlalchemy.orm.session.Session, 
-            default_start_date: str = DEFAULT_START_DATE, 
+            db_session: sqlalchemy.orm.session.Session,
+            rewrite: bool = False,
             data_merger: DataMerger | None = None
         ):
         """
         Initialize ETL class
 
         Parameters:
-            db_connection (sqlalchemy.orm.session.Session): Connection to the database
-            default_start_date (str): Default date filter datasets on
+            db_session (sqlalchemy.orm.session.Session): Database session
+            rewrite (bool): Whether to redownload and rewrite the data
         
         Returns:
             None
         """
-        self._connection = db_connection
-        self.default_start_date = default_start_date
+        self._session = db_session
+        self._rewrite = rewrite
         self.data_merger = data_merger
 
     def get_last_processed_date(self) -> datetime:
@@ -59,7 +58,8 @@ class ETL:
         Returns:
             date (datetime): Last ETL process run date
         """
-        return datetime.strptime(self.default_start_date, '%Y-%m-%d').date()
+        query = 'SELECT MAX(MATCH_DATE) FROM match'
+        return self._session.execute(text(query)).fetchone()[0]
     
     def add_dataset(self, dataset: Dataset) -> None:
         """
@@ -90,8 +90,9 @@ class ETL:
             data_list.append(data)
 
         if len(self.datasets) > 1 and self.data_merger is not None:
-            merged_data = self.data_merger.merge(data_list)
-            pd.to_sql(merged_data, self.connection)
+            data = self.data_merger.merge(data_list)
+        
+        data.to_sql('match', self._session.bind, index=False, if_exists='append')
 
 
 def run_etl() -> None:
@@ -101,11 +102,11 @@ def run_etl() -> None:
     Returns: 
         None
     """
-    with open('updater\\configuration\\footballdata_co_uk.yaml', 'r') as file:
+    with open('etl\\configuration\\footballdata_co_uk.yaml', 'r') as file:
         fd_uk_config = yaml.safe_load(file)
     fduk = FootballDataCoUK(fd_uk_config)
     with Session.begin() as session:
-        etl = ETL(db_connection=session)
+        etl = ETL(db_session=session)
         etl.add_dataset(fduk)
         etl.run()
 
