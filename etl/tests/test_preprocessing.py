@@ -1,6 +1,6 @@
-import pytest
+# pylint: skip-file
 from datetime import datetime
-
+import pytest
 import pandas as pd
 import numpy as np
 
@@ -13,7 +13,7 @@ testing_df = pd.DataFrame({
 })
 
 
-def test_parse_dates_valid_format():
+def test_parse_dates_valid_format() -> None:
     expected_df = pd.DataFrame({
         'column': ['A', 'B', 'C', 'D'],
         'date': [datetime(2023, 8, 1), datetime(2023, 8, 2), datetime(2023, 8, 3), np.nan],
@@ -25,6 +25,6 @@ def test_parse_dates_valid_format():
     )
 
 
-def test_parse_dates_invalid_format():
+def test_parse_dates_invalid_format() -> None:
     with pytest.raises(pd.errors.ParserError):
         result_df = parse_dates(testing_df, 'date', ['%Y/%m/%d'])

@@ -14,8 +14,8 @@ class DataDownloader(ABC):
     """Abstract DataDownloader class"""
 
     @abstractmethod
-    def download(self, url: str, **kwargs: Callable[P, Any]): # pragma: no cover
-        pass
+    def download(self, url: str, **kwargs: Callable[P, Any]) -> Any: # pragma: no cover
+        """abstract download function"""
 
 
 class CSVDataDownloader:
@@ -77,12 +77,12 @@ class CSVDataDownloader:
         Returns:
             data (pd.DataFrame): DataFrame with downloaded data
         """
-        resp = requests.get(url)
+        resp = requests.get(url, timeout=60)
         resp.raise_for_status()
         content = resp.iter_lines()
         header = self._parse_byte_line(next(content))
         lines = [
-            parsed_line[:len(header)] for line in content 
+            parsed_line[:len(header)] for line in content
             if not self._is_empty_line(parsed_line := self._parse_byte_line(line))
         ]
         data = pd.DataFrame(data=lines, columns=header)

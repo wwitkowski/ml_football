@@ -1,9 +1,12 @@
-from abc import ABC, abstractmethod
+"""Datasets mergers"""
 
+from abc import ABC, abstractmethod
 import pandas as pd
 
+
 class DataMerger(ABC):
+    """ABstract DataMerger class"""
 
     @abstractmethod
-    def merge(datasets: list[pd.DataFrame]) -> pd.DataFrame: # pragma: no cover
-        pass
+    def merge(self, datasets: list[pd.DataFrame]) -> pd.DataFrame: # pragma: no cover
+        """abstract merge function"""

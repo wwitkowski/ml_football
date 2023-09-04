@@ -4,13 +4,13 @@ from datetime import datetime
 import logging
 
 import yaml
-import pandas as pd
 
 import sqlalchemy
 from sqlalchemy import text
-from etl.dataset import Dataset, FootballDataCoUK
 from database.database import Session
+from etl.dataset import Dataset, FootballDataCoUK
 from etl.merging import DataMerger
+
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -32,7 +32,7 @@ class ETL:
     datasets = []
 
     def __init__(
-            self, 
+            self,
             db_session: sqlalchemy.orm.session.Session,
             rewrite: bool = False,
             data_merger: DataMerger | None = None
@@ -60,7 +60,7 @@ class ETL:
         """
         query = 'SELECT MAX(MATCH_DATE) FROM match'
         return self._session.execute(text(query)).fetchone()[0]
-    
+
     def add_dataset(self, dataset: Dataset) -> None:
         """
         Add dataset to ETL process run
@@ -91,7 +91,7 @@ class ETL:
 
         if len(self.datasets) > 1 and self.data_merger is not None:
             data = self.data_merger.merge(data_list)
-        
+
         data.to_sql('match', self._session.bind, index=False, if_exists='append')
 
 

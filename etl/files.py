@@ -11,21 +11,22 @@ P = ParamSpec("P")
 
 class File(ABC):
     """Abstract class for file managing"""
+    path: Path
 
     @abstractmethod
-    def exists(): # pragma: no cover
+    def exists(self) -> bool: # pragma: no cover
         """Check if file exists"""
 
     @abstractmethod
-    def read(**kwargs: Callable[P, Any]): # pragma: no cover
+    def read(self, **kwargs: Callable[P, Any]) -> Any: # pragma: no cover
         """Read file"""
 
     @abstractmethod
-    def save(data, **kwargs: Callable[P, Any]): # pragma: no cover
+    def save(self, data: Any, **kwargs: Callable[P, Any]) -> None: # pragma: no cover
         """Save file"""
 
 
-class CSVFile:
+class CSVFile(File):
     """
     Class for managing csv files.
 
@@ -59,7 +60,7 @@ class CSVFile:
         """
         return self.path.is_file()
 
-    def read(self, **kwargs: Callable[P, Any]):
+    def read(self, **kwargs: Callable[P, Any]) -> pd.DataFrame:
         """
         Read file.
 
@@ -70,7 +71,7 @@ class CSVFile:
             data (pd.DataFrame): File data
         """
         return pd.read_csv(self.path, **kwargs)
-    
+
     def save(self, data: pd.DataFrame, **kwargs: Callable[P, Any]) -> None:
         """
         Save data to a file.

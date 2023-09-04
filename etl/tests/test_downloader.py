@@ -1,6 +1,8 @@
-from typing import Iterator, Callable, ParamSpec, Any
+# pylint: skip-file
+from typing import ParamSpec
+from unittest.mock import patch
+
 import pytest
-from unittest.mock import patch, Mock
 import pandas as pd
 
 from etl.downloader import CSVDataDownloader
@@ -11,7 +13,7 @@ P = ParamSpec("P")
 
 
 @pytest.fixture(autouse=True)
-def patch_read_csv() -> Mock:
+def patch_read_csv():
     """mock pandas.read_csv"""
     with patch('pandas.read_csv') as mock_read_csv:
         yield mock_read_csv

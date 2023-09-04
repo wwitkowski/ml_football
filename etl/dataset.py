@@ -18,11 +18,11 @@ logger = logging.getLogger(__name__)
 
 
 class Dataset(ABC):
+    """Abstract Dataset class"""
 
     @abstractmethod
-    def download_data(self, latest_date: datetime): # pragma: no cover
+    def download_data(self, latest_date: datetime) -> Any: # pragma: no cover
         """Abstract download method"""
-        pass
 
 
 class FootballDataCoUK(Dataset):
@@ -105,14 +105,13 @@ class FootballDataCoUK(Dataset):
             .pipe(parse_dates, col=date_column, date_formats=date_formats)
             .dropna(subset=not_null_columns)
             .apply(
-                lambda col: pd.to_numeric(col, errors='coerce') if col.name in columns_numeric else col, 
+                lambda col: pd.to_numeric(col, errors='coerce') if col.name in columns_numeric else col,
                 axis=0
             )
             .rename(columns=columns_rename)
             .assign(season=season)
         )
         return data
-        
 
     def download_data(self, latest_date: datetime) -> pd.DataFrame:
         """
@@ -139,8 +138,7 @@ class FootballDataCoUK(Dataset):
                     if err.code in (300, 404):
                         logger.info('Data %s - %s does not exist.', league, season)
                         continue
-                    else:
-                        raise
+                    raise
                 if not self._is_valid_data(raw_df):
                     logger.info('Data %s - %s is not valid.', league, season)
                     continue

@@ -1,8 +1,9 @@
-import pytest
+# pylint: skip-file
 from datetime import datetime
-from unittest.mock import Mock, patch
+from unittest.mock import Mock
 from urllib.error import HTTPError
 
+import pytest
 import numpy as np
 import pandas as pd
 
@@ -44,31 +45,31 @@ config = {
 
 class MockFileExists(File):
 
-    def __init__(self, filepath):
+    def __init__(self, filepath: str) -> None:
         self.filepath = filepath
 
-    def exists(self):
+    def exists(self) -> bool:
         return True
-    
-    def read(self, **kwargs): # pragma: no cover
+
+    def read(self, **kwargs) -> None: # pragma: no cover
         pass
-    
-    def save(self, data, **kwargs): # pragma: no cover
+
+    def save(self, data, **kwargs) -> None: # pragma: no cover
         pass
 
 
 class MockFileNotExists(File):
 
-    def __init__(self, filepath):
+    def __init__(self, filepath: str) -> None:
         self.filepath = filepath
 
-    def exists(self):
+    def exists(self) -> bool:
         return False
-    
-    def read(self, **kwargs): # pragma: no cover
+
+    def read(self, **kwargs) -> None: # pragma: no cover
         pass
-    
-    def save(self, data, **kwargs):
+
+    def save(self, data, **kwargs) -> None:
         pass
 
 
@@ -78,7 +79,7 @@ def mock_data_downloader():
     return mock
 
 
-def test_generate_seasons():
+def test_generate_seasons() -> None:
     football_data = FootballDataCoUK(config)
     start_date = datetime(2023, 1, 1).date()
     end_date = datetime(2023, 12, 31).date()
@@ -90,7 +91,7 @@ def test_generate_seasons():
     assert list(seasons) == ['1920', '2021', '2122', '2223', '2324']
 
 
-def test_download_data_valid_df(mock_data_downloader):
+def test_download_data_valid_df(mock_data_downloader) -> None:
     expected_df = pd.DataFrame({
         'col1': [2, 3, np.nan]*3,
         'column2': ['B', 'C', np.nan]*3,
@@ -108,7 +109,7 @@ def test_download_data_valid_df(mock_data_downloader):
     pd.testing.assert_frame_equal(result.reset_index(drop=True), expected_df.reset_index(drop=True))
 
 
-def test_download_data_invalid_df(mock_data_downloader):
+def test_download_data_invalid_df(mock_data_downloader) -> None:
     latest_date = datetime(2023, 8, 1)
     mock_data_downloader.download.return_value = invalid_df
 
@@ -120,9 +121,15 @@ def test_download_data_invalid_df(mock_data_downloader):
     pd.testing.assert_frame_equal(result.reset_index(drop=True), pd.DataFrame().reset_index(drop=True))
 
 
-def test_download_data_ok_http_err(mock_data_downloader):
+def test_download_data_ok_http_err(mock_data_downloader) -> None:
     latest_date = datetime(2023, 8, 1)
-    mock_data_downloader.download.side_effect = HTTPError(url='https://example.com/', code=404, msg='msg', hdrs=None, fp=None)
+    mock_data_downloader.download.side_effect = HTTPError(
+        url='https://example.com/',
+        code=404,
+        msg='msg',
+        hdrs=None,
+        fp=None
+    )
 
     football_data = FootballDataCoUK(config)
     football_data._downloader = mock_data_downloader
@@ -132,9 +139,15 @@ def test_download_data_ok_http_err(mock_data_downloader):
     pd.testing.assert_frame_equal(result.reset_index(drop=True), pd.DataFrame().reset_index(drop=True))
 
 
-def test_download_data_nok_http_err(mock_data_downloader):
+def test_download_data_nok_http_err(mock_data_downloader) -> None:
     latest_date = datetime(2023, 8, 1)
-    mock_data_downloader.download.side_effect = HTTPError(url='https://example.com/', code=402, msg='msg', hdrs=None, fp=None)
+    mock_data_downloader.download.side_effect = HTTPError(
+        url='https://example.com/',
+        code=402,
+        msg='msg',
+        hdrs=None,
+        fp=None
+    )
 
     football_data = FootballDataCoUK(config)
     football_data._downloader = mock_data_downloader
@@ -144,7 +157,7 @@ def test_download_data_nok_http_err(mock_data_downloader):
         result = football_data.download_data(latest_date)
     
 
-def test_download_data_file_exists():
+def test_download_data_file_exists() -> None:
     latest_date = datetime(2023, 8, 1)
 
     football_data = FootballDataCoUK(config)
