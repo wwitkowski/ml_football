@@ -21,7 +21,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r test-requirements.txt
     - name: echo name
-      run: echo github.ref
+      run: echo ${{github.ref}}
     - if: github.ref == 'dev'
       name: pytest
       run: pytest --cov --cov-fail-under=50
