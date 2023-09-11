@@ -1,0 +1,14 @@
+[MAIN]
+fail-under=9.0
+
+[DEV]
+fail-under=5.0
+
+[FORMAT]
+max-line-length=120
+
+[MESSAGES_CONTROL]
+disable=
+    too-few-public-methods,
+    too-many-lines,
+    import-error
