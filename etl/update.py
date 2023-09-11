@@ -93,6 +93,9 @@ class ETL:
                 continue
             data_list.append(data)
 
+        if not data_list:
+            return
+
         if len(self.datasets) > 1 and self.data_merger is not None:
             data = self.data_merger.merge(data_list)
 
