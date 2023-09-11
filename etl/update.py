@@ -7,6 +7,7 @@ import yaml
 
 import sqlalchemy
 from sqlalchemy import text
+from pathlib import Path
 from database.database import Session
 from etl.dataset import Dataset, FootballDataCoUK
 from etl.merging import DataMerger
@@ -73,9 +74,12 @@ class ETL:
         """
         self.datasets.append(dataset)
 
-    def run(self) -> None:
+    def run(self, reload=False) -> None:
         """
         Run the ETL process
+
+        Parameters:
+            reload (bool): redownload all data
 
         Returns:
             None
@@ -84,7 +88,7 @@ class ETL:
 
         data_list = []
         for dataset in self.datasets:
-            data = dataset.download_data(latest_date=last_processed_date)
+            data = dataset.download_data(latest_date=last_processed_date, reload=reload)
             if data.empty:
                 continue
             data_list.append(data)
@@ -92,7 +96,10 @@ class ETL:
         if len(self.datasets) > 1 and self.data_merger is not None:
             data = self.data_merger.merge(data_list)
 
-        data.to_sql('match', self._session.bind, index=False, if_exists='append')
+        if_exists = 'replace' if reload else 'append'
+        logger.info('Uploading..')
+        data.to_sql('match', self._session.bind, schema='data', index=False, if_exists=if_exists)
+        logger.info('Done.')
 
 
 def run_etl() -> None:
@@ -102,7 +109,7 @@ def run_etl() -> None:
     Returns: 
         None
     """
-    with open('etl\\configuration\\footballdata_co_uk.yaml', 'r') as file:
+    with open(Path('etl/configuration/footballdata_co_uk.yaml'), 'r') as file:
         fd_uk_config = yaml.safe_load(file)
     fduk = FootballDataCoUK(fd_uk_config)
     with Session.begin() as session:

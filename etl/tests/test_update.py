@@ -13,7 +13,7 @@ from etl.merging import DataMerger
 # Mock the Dataset class
 class MockDataset(Dataset):
     """Mock dataset class"""
-    def download_data(self, latest_date: datetime.date) -> pd.DataFrame:
+    def download_data(self, latest_date: datetime.date, reload: bool = False) -> pd.DataFrame:
         # Return a sample DataFrame for testing
         return pd.DataFrame({'column1': [1, 2, 3]})
 

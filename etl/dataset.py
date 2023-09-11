@@ -1,14 +1,16 @@
 """Datasets"""
 
 import logging
+import time
 from abc import ABC, abstractmethod
 from datetime import datetime
 from typing import Iterator, ParamSpec, Any
-from urllib.error import HTTPError
+from requests.exceptions import HTTPError
 
 import pandas as pd
+import numpy as np
 
-from etl.downloader import CSVDataDownloader
+from etl.downloader import CSVRequestsDataDownloader
 from etl.files import CSVFile
 from etl.preprocessing import parse_dates
 
@@ -47,7 +49,7 @@ class FootballDataCoUK(Dataset):
             None
         """
         self.config = config
-        self._downloader = CSVDataDownloader()
+        self._downloader = CSVRequestsDataDownloader(encoding='unicode_escape')
         self._file_manager = CSVFile
 
     @staticmethod
@@ -103,6 +105,7 @@ class FootballDataCoUK(Dataset):
         data = (
             data[[col for col in data.columns if col in columns_select]].copy()
             .pipe(parse_dates, col=date_column, date_formats=date_formats)
+            .replace('', np.nan)
             .dropna(subset=not_null_columns)
             .apply(
                 lambda col: pd.to_numeric(col, errors='coerce') if col.name in columns_numeric else col,
@@ -113,40 +116,46 @@ class FootballDataCoUK(Dataset):
         )
         return data
 
-    def download_data(self, latest_date: datetime) -> pd.DataFrame:
+    def download_data(self, latest_date: datetime, reload: bool = False) -> pd.DataFrame:
         """
         Download data and filter it since latest_date.
 
         Parameters:
             latest_date (datetime): Date to filter the data on
+            reload (bool): Whether to redownload all data
 
         Returns:
             data (pd.DataFrame): Downloaded and preprocessed valid data
         """
         dataframes = []
-        start_date = latest_date or datetime.strptime(self.config['default_start_date'], "%Y-%m-%d")
+        start_date = latest_date or datetime.strptime(self.config['default_start_date'], "%Y-%m-%d").date()
         for league in self.config['leagues']:
             for season in self._generate_seasons(start_date, datetime.today().date()):
                 filepath = f'data/{self.__class__.__name__}/{season}/{league}.csv'
                 file = self._file_manager(filepath)
-                if file.exists():
+                if file.exists() and not reload:
+                    logger.info('Reading data from file')
+                    df = file.read()
+                    preprocessed_df = self._preprocess_data(df, season)
+                    dataframes.append(preprocessed_df)
                     continue
                 logger.info('DOWNLOADING: %s - %s', league, season)
                 try:
                     raw_df = self._downloader.download(f"{self.config['base_url']}{season}/{league}.csv")
                 except HTTPError as err:
-                    if err.code in (300, 404):
+                    if err.response.status_code in (300, 404):
                         logger.info('Data %s - %s does not exist.', league, season)
                         continue
                     raise
                 if not self._is_valid_data(raw_df):
                     logger.info('Data %s - %s is not valid.', league, season)
                     continue
+                file.save(raw_df, index=False)
                 preprocessed_df = self._preprocess_data(raw_df, season)
-                file.save(preprocessed_df, index=False)
                 dataframes.append(preprocessed_df)
+                time.sleep(2)
         if not dataframes:
             return pd.DataFrame()
         data = pd.concat(dataframes)
-        data = data[data['match_date'].dt.date > latest_date]
+        data = data[data['match_date'].dt.date > start_date]
         return data

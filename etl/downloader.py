@@ -1,12 +1,16 @@
 """Downloaders"""
 
 from abc import ABC, abstractmethod
+import logging
+import time
 from typing import Callable, ParamSpec, Any
+from urllib3.exceptions import SSLError
 
 import requests
 import pandas as pd
 
 
+logger = logging.getLogger(__name__)
 P = ParamSpec("P")
 
 
@@ -18,7 +22,7 @@ class DataDownloader(ABC):
         """abstract download function"""
 
 
-class CSVDataDownloader:
+class CSVRequestsDataDownloader:
     """
     Class for handling CSV downloads from internet.
 
@@ -28,7 +32,7 @@ class CSVDataDownloader:
         download(url, encoding, **kwargs): Download csv data
     """
 
-    def __init__(self, encoding: str = 'utf8') -> None:
+    def __init__(self, encoding: str = 'utf-8') -> None:
         """
         Init csv downloader class.
 
@@ -39,6 +43,7 @@ class CSVDataDownloader:
             None
         """
         self.encoding = encoding
+        self._session = requests.Session()
 
     @staticmethod
     def _is_empty_line(line: list[str]) -> bool:
@@ -67,7 +72,7 @@ class CSVDataDownloader:
         """
         return line.decode(self.encoding).split(',')
 
-    def _download_bad_csv_lines(self, url: str) -> pd.DataFrame:
+    def download(self, url: str) -> pd.DataFrame:
         """
         Download csv using request in order to parse line by line and handle potential data issues.
 
@@ -77,7 +82,7 @@ class CSVDataDownloader:
         Returns:
             data (pd.DataFrame): DataFrame with downloaded data
         """
-        resp = requests.get(url, timeout=60)
+        resp = self._session.get(url)
         resp.raise_for_status()
         content = resp.iter_lines()
         header = self._parse_byte_line(next(content))
@@ -86,21 +91,4 @@ class CSVDataDownloader:
             if not self._is_empty_line(parsed_line := self._parse_byte_line(line))
         ]
         data = pd.DataFrame(data=lines, columns=header)
-        return data
-
-    def download(self, url: str, **kwargs: Callable[P, Any]) -> pd.DataFrame:
-        """
-        Download data. If pandas read_csv() fails download using requests adn handle bad csv lines.
-
-        Parameters:
-            url (str): Data url
-            kwargs: pandas read_csv kwargs
-
-        Returns:
-            data (pd.DataFrame): DataFrame with downloaded data
-        """
-        try:
-            data = pd.read_csv(url, encoding=self.encoding, **kwargs)
-        except pd.errors.ParserError:
-            data = self._download_bad_csv_lines(url)
         return data

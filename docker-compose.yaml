@@ -14,10 +14,10 @@ services:
       - ./db:/var/lib/postgresql/data
     container_name: postgres_database
 
-  updater:
+  etl:
     build: 
       context: .
-      dockerfile: Dockerfile-updater
+      dockerfile: Dockerfile-etl
     depends_on:
       - db
     stdin_open: true

@@ -12,6 +12,7 @@ def mock_file() -> File:
     example_str_path = 'folder/file.csv'
     return CSVFile(example_str_path)
 
+
 def test_create_file_object() -> None:
     example_str_path = 'folder/file.csv'
     expected_path = Path(example_str_path)
@@ -35,6 +36,7 @@ def test_read(mock_file: File) -> None:
     with patch("pandas.read_csv", return_value=data):
         read_data = mock_file.read()
         pd.testing.assert_frame_equal(data, read_data)
+
 
 def test_save(mock_file: File) -> None:
     data = pd.DataFrame({"column1": [1, 2, 3], "column2": ["A", "B", "C"]})
