@@ -74,7 +74,7 @@ class ETL:
         """
         self.datasets.append(dataset)
 
-    def run(self, reload=False) -> None:
+    def run(self, reload: bool = False) -> None:
         """
         Run the ETL process
 
