@@ -53,7 +53,20 @@ def test_run(mock_session) -> None:
         etl.add_dataset(empty_dataset)
         etl.run()
 
-    assert mock_to_sql.called
+    mock_to_sql.assert_called
+
+
+def test_run_no_update(mock_session) -> None:
+    with patch('pandas.DataFrame.to_sql') as mock_to_sql:
+        mock_to_sql.return_value = None
+        mock_session.bind = None
+        etl = ETL(mock_session)
+        empty_dataset = Mock()
+        empty_dataset.download_data.return_value = pd.DataFrame()
+        etl.add_dataset(empty_dataset)
+        etl.run()
+
+    mock_to_sql.assert_not_called
 
 
 def test_run_etl(mock_session) -> None:
@@ -67,4 +80,4 @@ def test_run_etl(mock_session) -> None:
 
         run_etl()
 
-    assert mock_etl.called
+    mock_etl.assert_called
