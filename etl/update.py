@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import logging
+import os
 
 import yaml
 
@@ -9,8 +10,12 @@ import sqlalchemy
 from sqlalchemy import text
 from pathlib import Path
 from database.database import Session
+from etl.data_parser import CSVDataParser
+from etl.data_quality import DataQualityValidator
 from etl.dataset import Dataset, FootballDataCoUK
-from etl.merging import DataMerger
+from etl.date_utils import parse_dates
+from etl.download_processor import DownloadProcessor
+from etl.preprocessing import PreprocessingPipeline
 
 
 logging.basicConfig(level=logging.INFO)
@@ -22,7 +27,6 @@ class ETL:
     Class responsible for running the ETL process for added datasets - Dataset classes.
 
     Attributes:
-        data_merger (DataMerger): DataMerger class responsible for merging Datasets
         datasets (list[Dataset]): List of Datasets
 
     Methods:
@@ -35,8 +39,7 @@ class ETL:
     def __init__(
             self,
             db_session: sqlalchemy.orm.session.Session,
-            rewrite: bool = False,
-            data_merger: DataMerger | None = None
+            rewrite: bool = False
         ):
         """
         Initialize ETL class
@@ -50,16 +53,19 @@ class ETL:
         """
         self._session = db_session
         self._rewrite = rewrite
-        self.data_merger = data_merger
 
-    def get_last_processed_date(self) -> datetime:
+    def get_last_processed_date(self, column: str, table: str) -> datetime:
         """
-        Get last run date from db. Used to run ETL on the latest data only.
+        Get last run date from db table. Used to run ETL on the latest data only.
+
+        Parameters:
+            columns (str): columns with the date.
+            table (str): DB table name.
 
         Returns:
             date (datetime): Last ETL process run date
         """
-        query = 'SELECT MAX(MATCH_DATE) FROM match'
+        query = f'SELECT MAX({column}) FROM {table}'
         return self._session.execute(text(query)).fetchone()[0]
 
     def add_dataset(self, dataset: Dataset) -> None:
@@ -84,25 +90,20 @@ class ETL:
         Returns:
             None
         """
-        last_processed_date = self.get_last_processed_date()
 
-        data_list = []
         for dataset in self.datasets:
+            sql_date_column = dataset.config['database']['date_column']
+            sql_table_name = dataset.config['database']['table_name']
+            last_processed_date = self.get_last_processed_date(sql_date_column, sql_table_name)
+
             data = dataset.download_data(latest_date=last_processed_date, reload=reload)
             if data.empty:
                 continue
-            data_list.append(data)
 
-        if not data_list:
-            return
-
-        if len(self.datasets) > 1 and self.data_merger is not None:
-            data = self.data_merger.merge(data_list)
-
-        if_exists = 'replace' if reload else 'append'
-        logger.info('Uploading..')
-        data.to_sql('match', self._session.bind, schema='data', index=False, if_exists=if_exists)
-        logger.info('Done.')
+            if_exists = 'replace' if reload else 'append'
+            logger.info('Uploading..')
+            data.to_sql(sql_table_name, self._session.bind, schema='data', index=False, if_exists=if_exists)
+            logger.info('Done.')
 
 
 def run_etl() -> None:
@@ -113,13 +114,47 @@ def run_etl() -> None:
         None
     """
     with open(Path('etl/configuration/footballdata_co_uk.yaml'), 'r') as file:
-        fd_uk_config = yaml.safe_load(file)
-    fduk = FootballDataCoUK(fd_uk_config)
+        fd_config = yaml.safe_load(file)
+    fd_dataset = FootballDataCoUK(fd_config)
     with Session.begin() as session:
         etl = ETL(db_session=session)
-        etl.add_dataset(fduk)
+        etl.add_dataset(fd_dataset)
         etl.run()
 
 
 if __name__ == '__main__':
-    run_etl()
+    # run_etl()
+
+    import requests
+    selected_league_ids = [
+        39, 40, 41, # 42 England
+        135, 136,  # Italy
+        78, 79, # Germany
+        61, # 62 France
+        140, 141, # Spain
+        88, # Netherlands
+        203, # Turkey
+        94, # Portugal
+        144, # Belgium
+        119, # Denmark
+        106, # Poland
+        71, # Brazil
+        253, # USA
+        128, # Argentina
+        103, # Norway
+        113, # Sweden
+    ]
+    url = "https://api-football-v1.p.rapidapi.com/v3/fixtures"
+
+    querystring = {"date":"2023-10-07"}
+
+    headers = {
+        "X-RapidAPI-Key": os.getenv("X-RapidAPI-Key"),
+        "X-RapidAPI-Host": os.getenv("X-RapidAPI-Host"),
+    }
+
+    response = requests.get(url, headers=headers, params=querystring).json()
+
+    matches = [match for match in response['response'] if match['league']['id'] in selected_league_ids]
+
+    print()
