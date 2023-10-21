@@ -2,12 +2,9 @@
 from abc import ABC, abstractclassmethod
 import logging
 
-import pandas as pd
 from etl.data_parser import BaseParser, DataParser
 from etl.data_quality import DataQualityValidator
-from etl.dataset import Dataset
 from etl.downloader import DataDownloader
-from etl.exceptions import NotValidDataException
 
 from etl.files import FileManager
 from etl.preprocessing import PreprocessingPipeline
@@ -30,7 +27,7 @@ class DownloadProcessor:
 
     def process(
             self,
-            dataset: Dataset,
+            downloader: DataDownloader,
             file_manager = FileManager,
             parser: DataParser | None = None,
             preprocessing_pipeline: PreprocessingPipeline | None = None, 
@@ -40,7 +37,7 @@ class DownloadProcessor:
         if file_manager.exists() and self.reload is False:
             data = file_manager.read()
         else:
-            response = dataset.download()
+            response = downloader.download()
             data = parser.parse(response)
             if validator:
                 validator.validate(data)

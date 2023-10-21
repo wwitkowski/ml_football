@@ -18,9 +18,12 @@ def generate_seasons(start_date: datetime, end_date: datetime) -> Iterator[str]:
         season (str): Season string representation
     """
     for i in range(end_date.year - start_date.year + 3):
-        year = start_date.replace(year=start_date.year + i - 1).strftime('%y')
-        year_plus_one = start_date.replace(year=start_date.year + i).strftime('%y')
-        yield f'{year}{year_plus_one}'
+        year = start_date.replace(year=start_date.year + i - 1)
+        year_plus_one = start_date.replace(year=start_date.year + i)
+        yield (
+            f"{year.strftime('%y')}{year_plus_one.strftime('%y')}", 
+            f"{year.strftime('%Y')}{year_plus_one.strftime('%Y')}"
+        )
 
 
 def generate_dates(start_date: datetime, end_date: datetime) -> Iterator[str]:

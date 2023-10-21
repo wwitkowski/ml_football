@@ -1,6 +1,5 @@
 seasonal_dataset:
   base_url: "https://www.football-data.co.uk/mmz4281"
-  default_start_date: "2000-07-01"
   leagues:
     - "E0"
     - "E1"
@@ -16,9 +15,15 @@ seasonal_dataset:
     - "P1"
     - "B1"
     - "N1"
+  validation:
+    columns_required:
+      - "Date"
+      - "HomeTeam"
+      - "AwayTeam"
+      - "FTHG"
+      - "FTAG"
 new_dataset:
-    base_url: "https://www.football-data.co.uk/new"
-  default_start_date: "2000-07-01"
+  base_url: "https://www.football-data.co.uk/new"
   leagues:
     - "DNK"
     - "POL"
@@ -27,47 +32,55 @@ new_dataset:
     - "ARG"
     - "NOR"
     - "SWE"
+  validation:
+    columns_required:
+      - "Date"
+      - "Home"
+      - "Away"
+      - "HG"
+      - "AG"
+default_start_date: "2000-07-01"
 database:
   table_name: 'match'
   date_column: 'match_date'
 preprocessing:
   columns_select:
-    - "Div"
-    - "Date"
-    - "Time"
-    - "HomeTeam"
-    - "AwayTeam"
-    - "FTHG"
-    - "FTAG"
-    - "FTR"
-    - "HTHG"
-    - "HTAG"
-    - "HTR"
-    - "HS"
-    - "AS"
-    - "HST"
-    - "AST"
-    - "HF"
-    - "AF"
-    - "HC"
-    - "AC"
-    - "HY"
-    - "AY"
-    - "HR"
-    - "AR"
-    - "MaxCH"
-    - "MaxCD"
-    - "MaxCA"
-    - "AvgCH"
-    - "AvgCD"
-    - "AvgCA"
-    - "MaxC>2.5"
-    - "MaxC<2.5"
-    - "AvgC>2.5"
-    - "AvgC<2.5"
+    - "league"
+    - "match_date"
+    - "match_time"
+    - "home_team"
+    - "away_team"
+    - "home_score"
+    - "away_score"
+    - "match_result"
+    - "home_ht_score"
+    - "away_ht_score"
+    - "ht_result"
+    - "home_shots"
+    - "away_shots"
+    - "home_shots_ot"
+    - "away_shots_ot"
+    - "home_fouls"
+    - "away_fouls"
+    - "home_corners"
+    - "away_corners"
+    - "home_yellow"
+    - "away_yellow"
+    - "home_red"
+    - "away_red"
+    - "maxh"
+    - "maxd"
+    - "maxa"
+    - "avgh"
+    - "avgd"
+    - "avga"
+    - "max_over"
+    - "max_under"
+    - "avg_over"
+    - "avg_under"
   parse_dates:
     col:
-      'Date'
+      'match_date'
     date_formats:
       - '%d/%m/%y'
       - '%d/%m/%Y'
@@ -76,21 +89,26 @@ preprocessing:
       value: null
   dropna:
     subset:
-      - "Date"
-      - "HomeTeam"
-      - "AwayTeam"
-      - "FTHG"
-      - "FTAG"
+      - "match_date"
+      - "home_team"
+      - "away_team"
+      - "home_score"
+      - "away_score"
   convert_dtypes:
     convert_string: False
     convert_boolean: False
   rename:
     columns:
       Div: "league"
+      League: "league"
       Date: "match_date"
       Time: "match_time"
+      Home: "home_team"
+      Away: "away_team"
       HomeTeam: "home_team"
       AwayTeam: "away_team"
+      HG: "home_score"
+      AG: "away_score"
       FTHG: "home_score"
       FTAG: "away_score"
       FTR: "match_result"
@@ -109,47 +127,40 @@ preprocessing:
       AY: "away_yellow"
       HR: "home_red"
       AR: "away_red"
-      MaxCH: "maxch"
-      MaxCD: "maxcd"
-      MaxCA: "maxca"
-      AvgCH: "avgch"
-      AvgCD: "avgcd"
-      AvgCA: "avgca"
-      MaxC>2.5: "maxc_over"
-      MaxC<2.5: "maxc_under"
-      AvgC>2.5: "avgc_over"
-      AvgC<2.5: "avgc_under"
+      MaxH: "maxh"
+      MaxD: "maxd"
+      MaxA: "maxa"
+      AvgH: "avgh"
+      AvgD: "avgd"
+      AvgA: "avgd"
+      Max>2.5: "max_over"
+      Max<2.5: "max_under"
+      Avg>2.5: "avg_over"
+      Avg<2.5: "avg_under"
   columns_to_numeric:
-    - FTHG
-    - FTAG
-    - HTHG
-    - HTAG
-    - HS
-    - AS
-    - HST
-    - AST
-    - HF
-    - AF
-    - HC
-    - AC
-    - HY
-    - AY
-    - HR
-    - AR
-    - MaxCH
-    - MaxCD
-    - MaxCA
-    - AvgCH
-    - AvgCD
-    - AvgCA
-    - MaxC>2.5
-    - MaxC<2.5
-    - AvgC>2.5
-    - AvgC<2.5
-validation:
-  columns_required:
-    - "Date"
-    - "HomeTeam"
-    - "AwayTeam"
-    - "FTHG"
-    - "FTAG"
+    - home_score
+    - away_score
+    - home_ht_score
+    - away_ht_score
+    - home_shots
+    - away_shots
+    - "home_shots_ot"
+    - "away_shots_ot"
+    - "home_fouls"
+    - "away_fouls"
+    - "home_corners"
+    - "away_corners"
+    - "home_yellow"
+    - "away_yellow"
+    - "home_red"
+    - "away_red"
+    - "maxh"
+    - "maxd"
+    - "maxa"
+    - "avgh"
+    - "avgd"
+    - "avga"
+    - "max_over"
+    - "max_under"
+    - "avg_over"
+    - "avg_under"

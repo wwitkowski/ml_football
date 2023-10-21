@@ -9,7 +9,12 @@ import sqlalchemy
 from sqlalchemy import text
 from pathlib import Path
 from database.database import Session
+from etl.data_parser import CSVDataParser
+from etl.data_quality import DataQualityValidator
 from etl.dataset import Dataset, FootballDataCoUK
+from etl.date_utils import parse_dates
+from etl.download_processor import DownloadProcessor
+from etl.preprocessing import PreprocessingPipeline
 
 
 logging.basicConfig(level=logging.INFO)
@@ -108,11 +113,11 @@ def run_etl() -> None:
         None
     """
     with open(Path('etl/configuration/footballdata_co_uk.yaml'), 'r') as file:
-        fd_uk_config = yaml.safe_load(file)
-    fduk = FootballDataCoUK(fd_uk_config)
+        fd_config = yaml.safe_load(file)
+    fd_dataset = FootballDataCoUK(fd_config)
     with Session.begin() as session:
         etl = ETL(db_session=session)
-        etl.add_dataset(fduk)
+        etl.add_dataset(fd_dataset)
         etl.run()
 
 
