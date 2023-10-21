@@ -2,93 +2,66 @@
 
 from abc import ABC, abstractmethod
 import logging
-import time
 from typing import Callable, ParamSpec, Any
-from urllib3.exceptions import SSLError
 
 import requests
-import pandas as pd
 
 
 logger = logging.getLogger(__name__)
-P = ParamSpec("P")
 
 
 class DataDownloader(ABC):
     """Abstract DataDownloader class"""
 
     @abstractmethod
-    def download(self, url: str, **kwargs: Callable[P, Any]) -> Any: # pragma: no cover
+    def download(self) -> Any: # pragma: no cover
         """abstract download function"""
 
 
-class CSVRequestsDataDownloader:
+class URLDataDownloader:
     """
-    Class for handling CSV downloads from internet.
-
-    Class also handles csv with unnecessary commas if present in file which causes read_csv() to fail.
+    Class for managing data download from internet websites.
 
     Methods:
         download(url, encoding, **kwargs): Download csv data
     """
 
-    def __init__(self, encoding: str = 'utf-8') -> None:
+    def __init__(
+            self, 
+            method: str, 
+            url: str,
+            session: requests.Session | None = None, 
+            **kwargs
+        ) -> None:
         """
-        Init csv downloader class.
+        Initialize class.
 
         Parameters:
-            encoding (str): Bytes encoding method
+            session (requests.Session): Requests Session
 
         Returns:
             None
         """
-        self.encoding = encoding
-        self._session = requests.Session()
+        self._session = session or requests.Session()
+        self.method = method
+        self.url = url
+        self.requests_kwargs = kwargs
 
-    @staticmethod
-    def _is_empty_line(line: list[str]) -> bool:
+
+    def download(self) -> requests.models.Response:
         """
-        Determine if line is empty.
+        Download response.
 
         Parameters:
-            line (str): List of values in line
-        
-        Returns:
-            is_empty (bool): Whether the line is empty
-        """
-        if not any(line):
-            return True
-        return False
-
-    def _parse_byte_line(self, line: bytes) -> list[str]:
-        """
-        Parse bytes file line and split unto list.
-
-        Parameters:
-            line (bytes): Line bytes
-
-        Returns:
-            line (list[str]): Encoded list of str values
-        """
-        return line.decode(self.encoding).split(',')
-
-    def download(self, url: str) -> pd.DataFrame:
-        """
-        Download csv using request in order to parse line by line and handle potential data issues.
-
-        Parameters:
+            method(str): HTTP request method.
             url (str): Data url
 
         Returns:
-            data (pd.DataFrame): DataFrame with downloaded data
+            response (requests.models.Response): Response object
         """
-        resp = self._session.get(url)
-        resp.raise_for_status()
-        content = resp.iter_lines()
-        header = self._parse_byte_line(next(content))
-        lines = [
-            parsed_line[:len(header)] for line in content
-            if not self._is_empty_line(parsed_line := self._parse_byte_line(line))
-        ]
-        data = pd.DataFrame(data=lines, columns=header)
-        return data
+        logger.info('DOWNLOADING: %s', self.url)
+        response = self._session.request(
+            self.method, self.url, **self.requests_kwargs
+        )
+        response.raise_for_status()
+        return response

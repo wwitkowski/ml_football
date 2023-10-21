@@ -1,39 +1,36 @@
-base_url: "https://www.football-data.co.uk/mmz4281/"
-default_start_date: "2000-07-01"
-leagues:
-  - "E0"
-  - "E1"
-  - "E2"
-  - "E3"
-  - "EC"
-  - "SC0"
-  - "SC1"
-  - "SC2"
-  - "SC3"
-  - "D1"
-  - "D2"
-  - "SP1"
-  - "SP2"
-  - "I1"
-  - "I2"
-  - "F1"
-  - "F2"
-  - "B1"
-  - "N1"
-  - "P1"
-  - "T1"
-  - "G1"
+seasonal_dataset:
+  base_url: "https://www.football-data.co.uk/mmz4281"
+  default_start_date: "2000-07-01"
+  leagues:
+    - "E0"
+    - "E1"
+    - "E2"
+    - "I1"
+    - "I2"
+    - "D1"
+    - "D2"
+    - "F1"
+    - "SP1"
+    - "SP2"
+    - "T1"
+    - "P1"
+    - "B1"
+    - "N1"
+new_dataset:
+    base_url: "https://www.football-data.co.uk/new"
+  default_start_date: "2000-07-01"
+  leagues:
+    - "DNK"
+    - "POL"
+    - "BRA"
+    - "USA"
+    - "ARG"
+    - "NOR"
+    - "SWE"
+database:
+  table_name: 'match'
+  date_column: 'match_date'
 preprocessing:
-  date_column: 'Date'
-  date_formats:
-   - '%d/%m/%y'
-   - '%d/%m/%Y'
-  not_null_columns:
-    - "Date"
-    - "HomeTeam"
-    - "AwayTeam"
-    - "FTHG"
-    - "FTAG"
   columns_select:
     - "Div"
     - "Date"
@@ -68,40 +65,60 @@ preprocessing:
     - "MaxC<2.5"
     - "AvgC>2.5"
     - "AvgC<2.5"
-  columns_rename:
-    Div: "league"
-    Date: "match_date"
-    Time: "match_time"
-    HomeTeam: "home_team"
-    AwayTeam: "away_team"
-    FTHG: "home_score"
-    FTAG: "away_score"
-    FTR: "match_result"
-    HTHG: "home_ht_score"
-    HTAG: "away_ht_score"
-    HTR: "ht_result"
-    HS: "home_shots"
-    AS: "away_shots"
-    HST: "home_shots_ot"
-    AST: "away_shots_ot"
-    HF: "home_fouls"
-    AF: "away_fouls"
-    HC: "home_corners"
-    AC: "away_corners"
-    HY: "home_yellow"
-    AY: "away_yellow"
-    HR: "home_red"
-    AR: "away_red"
-    MaxCH: "maxch"
-    MaxCD: "maxcd"
-    MaxCA: "maxca"
-    AvgCH: "avgch"
-    AvgCD: "avgcd"
-    AvgCA: "avgca"
-    MaxC>2.5: "maxc_over"
-    MaxC<2.5: "maxc_under"
-    AvgC>2.5: "avgc_over"
-    AvgC<2.5: "avgc_under"
+  parse_dates:
+    col:
+      'Date'
+    date_formats:
+      - '%d/%m/%y'
+      - '%d/%m/%Y'
+  replace:
+      to_replace: ''
+      value: null
+  dropna:
+    subset:
+      - "Date"
+      - "HomeTeam"
+      - "AwayTeam"
+      - "FTHG"
+      - "FTAG"
+  convert_dtypes:
+    convert_string: False
+    convert_boolean: False
+  rename:
+    columns:
+      Div: "league"
+      Date: "match_date"
+      Time: "match_time"
+      HomeTeam: "home_team"
+      AwayTeam: "away_team"
+      FTHG: "home_score"
+      FTAG: "away_score"
+      FTR: "match_result"
+      HTHG: "home_ht_score"
+      HTAG: "away_ht_score"
+      HTR: "ht_result"
+      HS: "home_shots"
+      AS: "away_shots"
+      HST: "home_shots_ot"
+      AST: "away_shots_ot"
+      HF: "home_fouls"
+      AF: "away_fouls"
+      HC: "home_corners"
+      AC: "away_corners"
+      HY: "home_yellow"
+      AY: "away_yellow"
+      HR: "home_red"
+      AR: "away_red"
+      MaxCH: "maxch"
+      MaxCD: "maxcd"
+      MaxCA: "maxca"
+      AvgCH: "avgch"
+      AvgCD: "avgcd"
+      AvgCA: "avgca"
+      MaxC>2.5: "maxc_over"
+      MaxC<2.5: "maxc_under"
+      AvgC>2.5: "avgc_over"
+      AvgC<2.5: "avgc_under"
   columns_to_numeric:
     - FTHG
     - FTAG

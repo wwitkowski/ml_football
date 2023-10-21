@@ -2,14 +2,15 @@
 
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, ParamSpec
+from typing import Any
+import logging
 import pandas as pd
 
 
-P = ParamSpec("P")
+logger = logging.getLogger(__name__)
 
 
-class File(ABC):
+class FileManager(ABC):
     """Abstract class for file managing"""
     path: Path
 
@@ -18,15 +19,15 @@ class File(ABC):
         """Check if file exists"""
 
     @abstractmethod
-    def read(self, **kwargs: Callable[P, Any]) -> Any: # pragma: no cover
+    def read(self) -> Any: # pragma: no cover
         """Read file"""
 
     @abstractmethod
-    def save(self, data: Any, **kwargs: Callable[P, Any]) -> None: # pragma: no cover
+    def save(self, data: Any) -> None: # pragma: no cover
         """Save file"""
 
 
-class CSVFile(File):
+class CSVFileManager(FileManager):
     """
     Class for managing csv files.
 
@@ -39,17 +40,19 @@ class CSVFile(File):
         save(data, **kwargs): Save data to a file
     """
 
-    def __init__(self, path: str | Path) -> None:
+    def __init__(self, path: str | Path, index: bool = False) -> None:
         """
         Initialize class
 
         Parameters:
             path (str or Path): File path
+            index (bool): Whether to save a dataframe index along with the data
 
         Returns:
             None
         """
         self.path = path if isinstance(path, Path) else Path(path)
+        self.index = index
 
     def exists(self) -> bool:
         """
@@ -60,7 +63,7 @@ class CSVFile(File):
         """
         return self.path.is_file()
 
-    def read(self, **kwargs: Callable[P, Any]) -> pd.DataFrame:
+    def read(self) -> pd.DataFrame:
         """
         Read file.
 
@@ -70,9 +73,10 @@ class CSVFile(File):
         Returns:
             data (pd.DataFrame): File data
         """
-        return pd.read_csv(self.path, **kwargs)
+        logger.info('Reading data from file.')
+        return pd.read_csv(self.path)
 
-    def save(self, data: pd.DataFrame, **kwargs: Callable[P, Any]) -> None:
+    def save(self, data: pd.DataFrame) -> None:
         """
         Save data to a file.
 
@@ -84,4 +88,4 @@ class CSVFile(File):
             None
         """
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        data.to_csv(self.path, **kwargs)
+        data.to_csv(self.path, index=self.index)
