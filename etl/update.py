@@ -2,6 +2,7 @@
 
 from datetime import datetime
 import logging
+import os
 
 import yaml
 
@@ -122,7 +123,7 @@ def run_etl() -> None:
 
 
 if __name__ == '__main__':
-    run_etl()
+    # run_etl()
 
     import requests
     selected_league_ids = [
@@ -148,8 +149,8 @@ if __name__ == '__main__':
     querystring = {"date":"2023-10-07"}
 
     headers = {
-        "X-RapidAPI-Key": "246f8ab1cemsh1ac84cd6779aa40p1d1614jsn23f099bc6916",
-        "X-RapidAPI-Host": "api-football-v1.p.rapidapi.com"
+        "X-RapidAPI-Key": os.getenv("X-RapidAPI-Key"),
+        "X-RapidAPI-Host": os.getenv("X-RapidAPI-Host"),
     }
 
     response = requests.get(url, headers=headers, params=querystring).json()
