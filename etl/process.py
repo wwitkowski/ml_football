@@ -127,7 +127,7 @@ class ETL:
             None
         """
         obj, data = dataset
-        if not data:
+        if data is None:
             return
         if mode == 'replace':
             session.execute(f"DELETE FROM {obj.schema}.{obj.table}")
