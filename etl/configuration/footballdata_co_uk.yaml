@@ -39,13 +39,13 @@ new_dataset:
       - "Away"
       - "HG"
       - "AG"
-default_start_date: "2000-07-01"
 database:
-  table_name: 'match'
+  table_name: 'football_data_co_uk'
   date_column: 'match_date'
 preprocessing:
   columns_select:
     - "league"
+    - "season"
     - "match_date"
     - "match_time"
     - "home_team"
@@ -100,6 +100,7 @@ preprocessing:
   rename:
     columns:
       Div: "league"
+      Season: "season"
       League: "league"
       Date: "match_date"
       Time: "match_time"
@@ -112,6 +113,7 @@ preprocessing:
       FTHG: "home_score"
       FTAG: "away_score"
       FTR: "match_result"
+      Res: "match_result"
       HTHG: "home_ht_score"
       HTAG: "away_ht_score"
       HTR: "ht_result"
@@ -132,7 +134,7 @@ preprocessing:
       MaxA: "maxa"
       AvgH: "avgh"
       AvgD: "avgd"
-      AvgA: "avgd"
+      AvgA: "avga"
       Max>2.5: "max_over"
       Max<2.5: "max_under"
       Avg>2.5: "avg_over"

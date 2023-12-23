@@ -1,5 +1,8 @@
 """Custom exceptions"""
 
 
-class NotValidDataException(Exception):
-    """Raised when data is not valid"""
+class InvalidDataException(Exception):
+    """Raised when data does not meet validation conditions"""
+
+class DataParserError(Exception):
+    """Raised when could not parse data"""

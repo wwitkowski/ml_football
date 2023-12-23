@@ -14,8 +14,8 @@ from etl.data_parser import CSVDataParser
 from etl.data_quality import DataQualityValidator
 from etl.dataset import Dataset, FootballDataCoUK
 from etl.date_utils import parse_dates
-from etl.download_processor import DownloadProcessor
-from etl.preprocessing import PreprocessingPipeline
+from etl.process import DownloadProcessor
+from etl.transform import PreprocessingPipeline
 
 
 logging.basicConfig(level=logging.INFO)
@@ -123,7 +123,7 @@ def run_etl() -> None:
 
 
 if __name__ == '__main__':
-    # run_etl()
+    run_etl()
 
     import requests
     selected_league_ids = [

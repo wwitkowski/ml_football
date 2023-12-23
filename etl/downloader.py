@@ -1,67 +1,56 @@
-"""Downloaders"""
-
 from abc import ABC, abstractmethod
 import logging
-from typing import Callable, ParamSpec, Any
-
 import requests
 
 
 logger = logging.getLogger(__name__)
 
 
-class DataDownloader(ABC):
-    """Abstract DataDownloader class"""
-
+class Downloader(ABC):
+    """
+    Abstract base class defining a downloader interface.
+    """
     @abstractmethod
-    def download(self) -> Any: # pragma: no cover
-        """abstract download function"""
-
-
-class URLDataDownloader:
-    """
-    Class for managing data download from internet websites.
-
-    Methods:
-        download(url, encoding, **kwargs): Download csv data
-    """
-
-    def __init__(
-            self, 
-            method: str, 
-            url: str,
-            session: requests.Session | None = None, 
-            **kwargs
-        ) -> None:
+    def download(self, session: requests.Session | None = None) -> bytes:
         """
-        Initialize class.
+        Abstract method to download data.
 
         Parameters:
-            session (requests.Session): Requests Session
+            session (Optional[requests.Session]): Optional requests session to use for the download.
 
         Returns:
-            None
+            bytes: Content retrieved from the download.
         """
-        self._session = session or requests.Session()
+        pass
+
+
+class APIDownloader(Downloader):
+    """
+    Implementation of a downloader for API endpoints.
+    """
+    def __init__(self, method: str, url: str, file_path: str, table: str, schema: str, **download_kwargs):
         self.method = method
         self.url = url
-        self.requests_kwargs = kwargs
-
-
-    def download(self) -> requests.models.Response:
+        self.file_path = file_path
+        self.table = table
+        self.schema = schema
+        self.download_kwargs = download_kwargs
+    
+    def download(self, session: requests.Session | None = None) -> bytes:
         """
-        Download response.
+        Download data from the specified URL using the provided method and options.
 
         Parameters:
-            method(str): HTTP request method.
-            url (str): Data url
+            session (requests.Session | None): Optional requests session to use for the download.
 
         Returns:
-            response (requests.models.Response): Response object
+            bytes: Content retrieved from the download.
+
+        Raises:
+            requests.HTTPError: If the response status code is not a success code.
         """
         logger.info('DOWNLOADING: %s', self.url)
-        response = self._session.request(
-            self.method, self.url, **self.requests_kwargs
-        )
+        session = session or requests.Session()
+        response = session.request(self.method, self.url, **self.download_kwargs)
         response.raise_for_status()
-        return response
+        return response.content
