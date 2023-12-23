@@ -6,7 +6,7 @@ class DataQualityValidator:
     """
     Validates data based on specified conditions.
     """
-    def __init__(self):
+    def __init__(self) -> None:
         self.conditions = []
 
     def add_condition(

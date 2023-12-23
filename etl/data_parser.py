@@ -67,12 +67,12 @@ class CSVDataParser(DataParser):
             logger.error('Error parsing data: Not enough content to parse.')
             raise DataParserError('Not enough content to parse')
         try:
-            content = content.decode(self.encoding)
+            decoded = content.decode(self.encoding)
         except UnicodeDecodeError:
             logger.error('Error parsing data: Could not decode data content.')
             raise DataParserError('Could not decode data content')
 
-        content_lines = content.splitlines()
+        content_lines = decoded.splitlines()
         reference_len = len(content_lines[0].split(','))
         lines = [
             parsed_line[:reference_len] for line in content_lines

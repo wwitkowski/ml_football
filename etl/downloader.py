@@ -28,7 +28,7 @@ class APIDownloader(Downloader):
     """
     Implementation of a downloader for API endpoints.
     """
-    def __init__(self, method: str, url: str, file_path: str, table: str, schema: str, **download_kwargs):
+    def __init__(self, method: str, url: str, file_path: str, table: str, schema: str, **download_kwargs) -> None:
         self.method = method
         self.url = url
         self.file_path = file_path
