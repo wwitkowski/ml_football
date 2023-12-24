@@ -41,7 +41,7 @@ class ETL:
     
     def extract(
             self, 
-            queue: List[Type[Downloader]],
+            queue: List[Downloader],
             mode: str,
             session: Any | None = None, 
             callback: Callable | None = None
@@ -56,10 +56,10 @@ class ETL:
             callback (Callable | None): Callback function for generating new download objects
 
         Yields:
-            Type[Downloader]: Object with successfully extracted data
+            Downloader: Object with successfully extracted data
         """
         while queue:
-            obj: Type[Downloader] = queue.pop()
+            obj: Downloader = queue.pop()
             file = self.file_handler(obj.file_path)
             if not file.exists() or mode == 'replace':
                 try:
