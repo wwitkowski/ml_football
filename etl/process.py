@@ -45,7 +45,7 @@ class ETL:
             mode: str,
             session: Any | None = None, 
             callback: Callable | None = None
-        ) -> Iterator[Type[Downloader]]:
+        ) -> Iterator[Downloader]:
         """
         Extract data from a queue of downloaders.
 
@@ -59,7 +59,7 @@ class ETL:
             Type[Downloader]: Object with successfully extracted data
         """
         while queue:
-            obj: Downloader = queue.pop()
+            obj: Type[Downloader] = queue.pop()
             file = self.file_handler(obj.file_path)
             if not file.exists() or mode == 'replace':
                 try:
