@@ -57,13 +57,6 @@ def test_parse_str():
         parser.parse(content)
 
 
-def test_parse_str():
-    content = "Name, Age, City\nJohn, 30, New York\nAlice, 25"
-    parser = CSVDataParser()
-    with pytest.raises(DataParserError):
-        parser.parse(content)
-
-
 def test_parse_unicode_decode_error():
     # This content cannot be decoded using 'utf-8'
     content = b'\xff\xfe\x00T\x00e\x00s\x00t\x00 \x00c\x00o\x00n\x00t\x00e\x00n\x00t\x00'
