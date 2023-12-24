@@ -28,7 +28,7 @@ def test_create_downloader():
     assert downloader.download_kwargs == {'headers': {'header': 'test'}}
     assert repr(downloader) ==\
         'APIDownloader(file_path=test_file.txt, method=GET, url=http://test_url.com, db=test_schema/test_table)'
-    assert str(downloader) == 'APIDownloader http://test_url.com@test_file.txt@'
+    assert str(downloader) == 'APIDownloader http://test_url.com@test_file.txt'
 
 
 def test_download(mock_request):
