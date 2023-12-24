@@ -14,10 +14,10 @@ class File:
 
     def __init__(self, path: str | Path) -> None:
         """
-        Initialize class
+        Initialize class.
 
         Parameters:
-            path (str | Path): File path
+            path (str | Path): File path.
 
         Returns:
             None
@@ -29,21 +29,28 @@ class File:
         Check if file exists.
 
         Returns:
-            bool: Whether file exists
+            bool: Whether file exists.
         """
         return self.path.is_file()
 
-    def read(self, mode: str = 'rb') -> bytes | str:
+    def read(self, mode: str = 'rb') -> bytes:
         """
-        Read file.
+        Read file. Currently only mode that reads bytes is supported.
 
         Parameters:
-            mode (str): File open mode ('r', 'rb', 'r+', etc.)
+            mode (str): File open mode ('r', 'rb', 'r+', etc.).
 
         Returns:
-            content(bytes | str): Content read from the file
+            content(bytes | str): Content read from the file.
+
+        Raises:
+            NotImplementedError: If the mode is unsupported.
+            FileNotFoundError: If the file does not exist.
+            IOError: If an error occurs while reading the file.
         """
         logger.info('Reading data from file %s.', self.path)
+        if mode != 'rb':
+            raise NotImplementedError('Currently only mode that reads bytes is supported.')
         try:
             with open(self.path, mode) as f:
                 content = f.read()
@@ -60,11 +67,14 @@ class File:
         Save data to a file.
 
         Parameters:
-            content (bytes | str): Data to be written to the file
-            mode (str): File open mode ('w', 'wb', 'w+', etc.)
+            content (bytes | str): Data to be written to the file.
+            mode (str): File open mode ('w', 'wb', 'w+', etc.).
 
         Returns:
             None
+
+        Raises:
+            IOError: If an error occurs while writing to the file.
         """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         try:

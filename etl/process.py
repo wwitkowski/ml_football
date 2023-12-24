@@ -59,7 +59,7 @@ class ETL:
             Type[Downloader]: Object with successfully extracted data
         """
         while queue:
-            obj = queue.pop()
+            obj: Downloader = queue.pop()
             file = self.file_handler(obj.file_path)
             if not file.exists() or mode == 'replace':
                 try:
