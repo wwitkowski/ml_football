@@ -1,5 +1,9 @@
+import logging
 from typing import Any, Callable
 from etl.exceptions import InvalidDataException
+
+
+logger = logging.getLogger(__name__)
 
 
 class DataQualityValidator:
@@ -45,6 +49,10 @@ class DataQualityValidator:
             if expected_result == result:
                 continue
             else:
+                logger.warning(
+                    'Validation failed for condition: %s. Expected result: %s, got %s',
+                    condition.__name__, expected_result, result
+                )
                 raise InvalidDataException(
                     f'Validation failed for condition: {condition.__name__}. Expected result: {expected_result}, got {result}'
                 )

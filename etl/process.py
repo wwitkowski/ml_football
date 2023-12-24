@@ -99,11 +99,7 @@ class ETL:
         if parser:  
             data = parser.parse(data)
         if validation_pipeline:
-            try:
-                validation_pipeline.validate(data)
-            except InvalidDataException as err:
-                logger.warning(err)
-                return (obj, None)
+            validation_pipeline.validate(data)
         if transform_pipeline:
             data = transform_pipeline.apply(data)
         return (obj, data)
@@ -126,8 +122,6 @@ class ETL:
             None
         """
         obj, data = dataset
-        if data is None:
-            return
         if mode == 'replace':
             session.execute(f"DELETE FROM {obj.schema}.{obj.table}")
             data.to_sql(obj.table, session.bind, schema=obj.schema, if_exists='append')

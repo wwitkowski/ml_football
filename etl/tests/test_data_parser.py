@@ -1,6 +1,8 @@
 # pylint: skip-file
 import pandas as pd
+import pytest
 from etl.data_parser import CSVDataParser
+from etl.exceptions import DataParserError
 
 
 
@@ -39,4 +41,32 @@ def test_csv_parser_no_header():
     parser = CSVDataParser(header=False)
     parsed = parser.parse(content)
     pd.testing.assert_frame_equal(parsed, expected_data)
-    
+
+
+def test_parse_empty_content():
+    content = b""
+    parser = CSVDataParser()
+    with pytest.raises(DataParserError):
+        parser.parse(content)
+
+
+def test_parse_str():
+    content = "Name, Age, City\nJohn, 30, New York"
+    parser = CSVDataParser()
+    with pytest.raises(DataParserError):
+        parser.parse(content)
+
+
+def test_parse_str():
+    content = "Name, Age, City\nJohn, 30, New York\nAlice, 25"
+    parser = CSVDataParser()
+    with pytest.raises(DataParserError):
+        parser.parse(content)
+
+
+def test_parse_unicode_decode_error():
+    # This content cannot be decoded using 'utf-8'
+    content = b'\xff\xfe\x00T\x00e\x00s\x00t\x00 \x00c\x00o\x00n\x00t\x00e\x00n\x00t\x00'
+    parser = CSVDataParser()
+    with pytest.raises(DataParserError):
+        parser.parse(content)

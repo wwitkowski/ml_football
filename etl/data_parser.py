@@ -78,14 +78,17 @@ class CSVDataParser(DataParser):
             DataParserError: If there's an issue during parsing
         """
         if len(content) < 2:
-            logger.error('Error parsing data: Not enough content to parse.')
+            logger.error('Error parsing content: Not enough content to parse.')
             raise DataParserError('Not enough content to parse')
 
         try:
             decoded = content.decode(self.encoding)
         except UnicodeDecodeError:
-            logger.error('Error parsing data: Could not decode content.')
+            logger.error('Error parsing content: Could not decode content.')
             raise DataParserError('Could not decode content')
+        except AttributeError:
+            logger.error('Error parsing content: Not a "bytes" object.')
+            raise DataParserError('Content is not a "bytes" object.')
 
         content_lines = decoded.splitlines()
         reference_len = len(content_lines[0].split(','))

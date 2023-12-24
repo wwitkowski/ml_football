@@ -42,9 +42,35 @@ def test_save(mock_file):
 
 
 def test_read(mock_file):
-    with patch('etl.files.open', mock_open(read_data='example data'), create=True) as m:
-        test_content = mock_file.read(mode='r')
+    with patch('etl.files.open', mock_open(read_data=b'example data'), create=True) as m:
+        test_content = mock_file.read(mode='rb')
 
-    m.assert_called_once_with(Path('folder/file.csv'), 'r')
-    assert test_content == 'example data'
+    m.assert_called_once_with(Path('folder/file.csv'), 'rb')
+    assert test_content == b'example data'
+
+
+def test_invalid_read_mode(mock_file):
+    with pytest.raises(NotImplementedError):
+        mock_file.read('r')
+
+
+def test_save_failure(mock_file):
+    with patch('etl.files.open', mock_open(), create=True) as m:
+        handle = m()
+        handle.write.side_effect = IOError()
+        with pytest.raises(IOError):
+            mock_file.save('example data')
+
+
+def test_read_failure(mock_file):
+    with patch('etl.files.open', mock_open(read_data=b'example data'), create=True) as m:
+        handle = m()
+        handle.read.side_effect = IOError()
+        with pytest.raises(IOError):
+            mock_file.read()
+
+
+def test_read_no_file(mock_file):
+    with pytest.raises(FileNotFoundError):
+        mock_file.read()
 

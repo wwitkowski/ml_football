@@ -79,7 +79,7 @@ class APIDownloader(Downloader):
         Returns:
             str: String representation of the object.
         """
-        return f'APIDownloader {self.file_path}@{self.url}'
+        return f'APIDownloader {self.url}@{self.file_path}'
     
     def download(self, session: requests.Session | None = None) -> bytes:
         """
