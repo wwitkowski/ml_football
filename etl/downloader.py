@@ -1,5 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
+from typing import Any
 import requests
 
 
@@ -9,17 +10,28 @@ logger = logging.getLogger(__name__)
 class Downloader(ABC):
     """
     Abstract base class defining a downloader interface.
+
+    Attributes:
+        file_path (str): The path to store the downloaded file.
+        table (str | None): The db table name (optional, can be None if data won't be loaded into db).
+        schema (str | None): The db schema name (optional, can be None if data won't be loaded into db).
+
     """
+    def __init__(self, file_path: str, table: str | None, schema: str | None) -> None:
+        self.file_path = file_path
+        self.table = table
+        self.schema = schema
+    
     @abstractmethod
-    def download(self, session: requests.Session | None = None) -> bytes:
+    def download(self, session: Any | None = None) -> Any:
         """
         Abstract method to download data.
 
         Parameters:
-            session (Optional[requests.Session]): Optional requests session to use for the download.
+            session (Any | None): Optional session to use for the download.
 
         Returns:
-            bytes: Content retrieved from the download.
+            Any: Content retrieved from the download.
         """
         pass
 
@@ -27,14 +39,47 @@ class Downloader(ABC):
 class APIDownloader(Downloader):
     """
     Implementation of a downloader for API endpoints.
+
+    Attributes:
+        method (str): The HTTP method used for the API request.
+        url (str): The URL for the API endpoint.
+        file_path (str): The path to store the downloaded file.
+        table (str | None): The table name (optional, can be None if not applicable).
+        schema (str | None): The schema name (optional, can be None if not applicable).
+        download_kwargs (dict): Additional keyword arguments for the download.
     """
-    def __init__(self, method: str, url: str, file_path: str, table: str, schema: str, **download_kwargs: dict) -> None:
+    def __init__(
+            self, 
+            method: str, 
+            url: str, 
+            file_path: str, 
+            table: str | None, 
+            schema: str | None, 
+            **download_kwargs: dict
+        ) -> None:
+        super().__init__(file_path, table, schema)
         self.method = method
         self.url = url
-        self.file_path = file_path
-        self.table = table
-        self.schema = schema
         self.download_kwargs = download_kwargs
+
+    
+    def __repr__(self) -> str:
+        """
+        Returns a representation of the object.
+
+        Returns:
+            str: Representation of the object.
+        """
+        return f'APIDownloader(file_path={self.file_path}, method={self.method}, url={self.url}, db={self.schema}/{self.table})'
+
+    def __str__(self) -> str:
+        """
+        Returns a string representation of the object.
+
+        Returns:
+            str: String representation of the object.
+        """
+        return f'APIDownloader {self.file_path}@{self.url}'
     
     def download(self, session: requests.Session | None = None) -> bytes:
         """

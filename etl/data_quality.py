@@ -5,6 +5,9 @@ from etl.exceptions import InvalidDataException
 class DataQualityValidator:
     """
     Validates data based on specified conditions.
+
+    Attributes:
+        conditions (list): List containing tuples of validation conditions, expected results, arguments, and keyword arguments.
     """
     def __init__(self) -> None:
         self.conditions = []
@@ -16,13 +19,13 @@ class DataQualityValidator:
         Adds a condition to be checked during validation.
         
         Parameters:
-            condition (callable): The validation condition to check
-            result (bool): The expected result of the condition
-            *args: condition function args
-            **kwargs: condition function kwargs
+            condition (callable): The validation condition to check.
+            result (bool): The expected result of the condition.
+            *args: Condition function arguments.
+            **kwargs: Condition function keyword arguments.
         
         Returns:
-            DataQualityValidator: The instance of DataQualityValidator with the added condition
+            DataQualityValidator: The instance of DataQualityValidator with the added condition.
         """
         self.conditions.append((condition, result, args, kwargs))
         return self
@@ -32,10 +35,10 @@ class DataQualityValidator:
         Validates the data based on the added conditions.
         
         Parameters:
-            data (any): Data to be validated
+            data (any): Data to be validated.
         
         Raises:
-            InvalidDataException: If any condition fails during validation
+            InvalidDataException: If any condition fails during validation.
         """
         for condition, expected_result, args, kwargs in self.conditions:
             result = condition(data, *args, **kwargs) 
@@ -43,6 +46,5 @@ class DataQualityValidator:
                 continue
             else:
                 raise InvalidDataException(
-                    'Validation failed for condition: %s. Expected result: %s, got %s', 
-                    condition.__name__, expected_result, result
+                    f'Validation failed for condition: {condition.__name__}. Expected result: {expected_result}, got {result}'
                 )

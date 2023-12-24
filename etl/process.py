@@ -1,6 +1,6 @@
 import time
 import logging
-from typing import Any, Callable, List, Tuple
+from typing import Any, Callable, Iterator, List, Tuple, Type
 
 import pandas as pd
 import requests
@@ -25,7 +25,7 @@ class ETL:
         file_handler (File): File handling class instance
     """
 
-    def __init__(self, sleep_time: int = 0, file_handler: File = File) -> None:
+    def __init__(self, sleep_time: int = 0, file_handler: Type[File] = File) -> None:
         """
         Initialize ETL class.
 
@@ -41,24 +41,23 @@ class ETL:
     
     def extract(
             self, 
-            queue: List[Downloader],
+            queue: List[Type[Downloader]],
             mode: str,
-            session: requests.Session | None = None, 
+            session: Any | None = None, 
             callback: Callable | None = None
-        ) -> Any:
+        ) -> Iterator[Type[Downloader]]:
         """
         Extract data from a queue of downloaders.
 
         Parameters:
             queue (List[Downloader]): Queue of downloaders
             mode (str): Extraction mode
-            session (requests.Session | None): Requests session
+            session (Any | None): Extract session
             callback (Callable | None): Callback function for generating new download objects
 
         Yields:
-            Any: Extracted object from the queue
+            Type[Downloader]: Object with successfully extracted data
         """
-        session = session or requests.Session()
         while queue:
             obj = queue.pop()
             file = self.file_handler(obj.file_path)
@@ -66,7 +65,7 @@ class ETL:
                 try:
                     content = obj.download(session)
                 except requests.exceptions.HTTPError as err:
-                    logger.warning('Error %d for %s', err.response.status_code, obj.url)
+                    logger.warning('Error %d for %s', err.response.status_code, obj)
                     time.sleep(self.sleep_time)
                     continue
                 file.save(content)
@@ -90,7 +89,7 @@ class ETL:
             obj (Downloader): Downloader object
             parser (DataParser | None): Parser object
             transform_pipeline (TransformPipeline | None): Transform pipeline
-            validation_pipeline (DataQualityValidator]): Validation pipeline
+            validation_pipeline (DataQualityValidator | None): Validation pipeline
 
         Returns:
             Tuple[Downloader, Any]: Tuple containing the object and transformed data

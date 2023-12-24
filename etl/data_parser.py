@@ -13,64 +13,79 @@ class DataParser(ABC):
     """
     Abstract base class for data parsers.
     """
+
     @abstractmethod
     def parse(self, response: bytes) -> pd.DataFrame:
         """
         Abstract method to parse data.
-        
+
         Parameters:
-            response (bytes): Data to be parsed
-        
+            response (bytes): Raw data to be parsed
+
         Returns:
             pd.DataFrame: Parsed data in DataFrame format
 
         Raises:
-            DataParserError: If there's an issue parsing the data
+            DataParserError: If there's an issue during parsing
         """
         pass
+
 
 class CSVDataParser(DataParser):
     """
     Parses CSV data into a Pandas DataFrame.
+
+    Attributes:
+        header (bool): Whether the CSV file has a header row.
+        encoding (str): The encoding of the CSV content.
     """
+
     def __init__(self, header: bool = True, encoding: str = 'utf-8'):
+        """
+        Initialize CSVDataParser.
+
+        Parameters:
+            header (bool, optional): Whether the CSV file has a header row (default is True)
+            encoding (str, optional): The encoding of the CSV content (default is 'utf-8')
+        """
         self.header = header
         self.encoding = encoding
 
     @staticmethod
     def _is_empty_line(line: List[str]) -> bool:
         """
-        Determine if line is empty.
-        
+        Check if a line contains only empty values.
+
         Parameters:
-            line (List[str]): List of values in line
-        
+            line (List[str]): List of values in the line
+
         Returns:
             bool: Whether the line is empty
         """
         return not any(line)
-    
+
     def parse(self, content: bytes) -> pd.DataFrame:
         """
-        Parse CSV content and convert it into a DataFrame.
-        
+        Parse CSV content into a Pandas DataFrame.
+
         Parameters:
             content (bytes): Raw content of CSV data
-        
+
         Returns:
-            pd.DataFrame: Parsed CSV data in DataFrame format or None if parsing fails
+            pd.DataFrame: Parsed CSV data in DataFrame format, or None if parsing fails
 
         Raises:
-            DataParserError: If there's an issue parsing the data
+            DataParserError: If there's an issue during parsing
         """
         if len(content) < 2:
             logger.error('Error parsing data: Not enough content to parse.')
             raise DataParserError('Not enough content to parse')
+
         try:
             decoded = content.decode(self.encoding)
         except UnicodeDecodeError:
-            logger.error('Error parsing data: Could not decode data content.')
-            raise DataParserError('Could not decode data content')
+            logger.error('Error parsing data: Could not decode content.')
+            raise DataParserError('Could not decode content')
 
         content_lines = decoded.splitlines()
         reference_len = len(content_lines[0].split(','))

@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 class File:
     """
     Class for managing files.
+
+    Attributes:
+        path (Path): The path to the file.
     """
 
     def __init__(self, path: str | Path) -> None:
