@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     start_date = datetime(2000, 7, 1)
     end_date = datetime.today()
     objects = []
