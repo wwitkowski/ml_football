@@ -19,7 +19,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
 
 
-def main():
+def main() -> None:
     objects = []
     with open(Path('etl/configuration/footballdata_co_uk.yaml'), 'r') as file:
         config = yaml.safe_load(file)

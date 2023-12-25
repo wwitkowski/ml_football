@@ -1,0 +1,24 @@
+name: Testing Dev
+
+on:
+  pull_request:
+    branches: [ dev ]
+
+jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v1
+      with:
+        python-version: "3.10"
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r test-requirements.txt
+        
+    - name: test ETL
+      run: |
+        pip install -r etl/requirements.txt
+        pytest --cov --cov-fail-under=50

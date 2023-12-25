@@ -1,9 +1,8 @@
-name: Quality
+name: Check Quality Prod
 
 on:
-  push:
   pull_request:
-    branches: [ main, dev ]
+    branches: [ main ]
 
 jobs:
   quality:
@@ -21,4 +20,4 @@ jobs:
     - name: pylint
       run: pylint . --recursive=y
     - name: mypy
-      run: mypy .
+      run: mypy . --config_file - mypy_prod.ini
