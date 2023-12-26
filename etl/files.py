@@ -1,87 +1,86 @@
-"""File managers"""
-
-from abc import ABC, abstractmethod
+"""Custom File Managers"""
 from pathlib import Path
-from typing import Any, Callable, ParamSpec
-import pandas as pd
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-P = ParamSpec("P")
-
-
-class File(ABC):
-    """Abstract class for file managing"""
-    path: Path
-
-    @abstractmethod
-    def exists(self) -> bool: # pragma: no cover
-        """Check if file exists"""
-
-    @abstractmethod
-    def read(self, **kwargs: Callable[P, Any]) -> Any: # pragma: no cover
-        """Read file"""
-
-    @abstractmethod
-    def save(self, data: Any, **kwargs: Callable[P, Any]) -> None: # pragma: no cover
-        """Save file"""
-
-
-class CSVFile(File):
+class File:
     """
-    Class for managing csv files.
+    Class for managing files.
 
     Attributes:
-        path (str or Path): Path where the file is saved/read
-
-    Methods:
-        exists(): Check if the file exists
-        read(**kwargs): Read file
-        save(data, **kwargs): Save data to a file
+        path (Path): The path to the file.
     """
 
     def __init__(self, path: str | Path) -> None:
         """
-        Initialize class
+        Initialize class.
 
         Parameters:
-            path (str or Path): File path
+            path (str | Path): File path.
 
         Returns:
             None
         """
-        self.path = path if isinstance(path, Path) else Path(path)
+        self.path = Path(path)
 
     def exists(self) -> bool:
         """
         Check if file exists.
 
         Returns:
-            exists (bool): Whether file exists
+            bool: Whether file exists.
         """
         return self.path.is_file()
 
-    def read(self, **kwargs: Callable[P, Any]) -> pd.DataFrame:
+    def read(self, mode: str = 'rb', encoding=None) -> bytes:
         """
-        Read file.
+        Read file. Currently only mode that reads bytes is supported.
 
         Parameters:
-            kwargs (Callable[P, Any]): Pandas read_csv() keyword arguments
+            mode (str): File open mode ('r', 'rb', 'r+', etc.).
 
         Returns:
-            data (pd.DataFrame): File data
-        """
-        return pd.read_csv(self.path, **kwargs)
+            content(bytes | str): Content read from the file.
 
-    def save(self, data: pd.DataFrame, **kwargs: Callable[P, Any]) -> None:
+        Raises:
+            NotImplementedError: If the mode is unsupported.
+            FileNotFoundError: If the file does not exist.
+            IOError: If an error occurs while reading the file.
+        """
+        logger.info('Reading data from file %s.', self.path)
+        if mode != 'rb':
+            raise NotImplementedError('Currently only mode that reads bytes is supported.')
+        try:
+            with open(self.path, mode, encoding=encoding) as f:
+                content = f.read()
+        except FileNotFoundError:
+            logger.error('File %s not found.', self.path)
+            raise
+        except IOError as exc:
+            logger.error('Error reading file %s: %s', self.path, exc)
+            raise
+        return content
+
+    def save(self, content: bytes | str, mode: str = 'wb', encoding='utf-8') -> None:
         """
         Save data to a file.
 
         Parameters:
-            data (pd.DataFrame): Data to be saved to a file
-            kwargs (Callable[P, Any]): Pandas to_csv() method keyword arguments
+            content (bytes | str): Data to be written to the file.
+            mode (str): File open mode ('w', 'wb', 'w+', etc.).
 
         Returns:
             None
+
+        Raises:
+            IOError: If an error occurs while writing to the file.
         """
         self.path.parent.mkdir(parents=True, exist_ok=True)
-        data.to_csv(self.path, **kwargs)
+        try:
+            with open(self.path, mode, encoding=encoding) as f:
+                f.write(content)
+        except IOError as exc:
+            logger.error('Error writing to file %s: %s', self.path, exc)
+            raise

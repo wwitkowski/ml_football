@@ -1,94 +1,106 @@
-"""Downloaders"""
-
+"""Downlaoder Objects"""
 from abc import ABC, abstractmethod
 import logging
-import time
-from typing import Callable, ParamSpec, Any
-from urllib3.exceptions import SSLError
-
+from typing import Any, Dict
 import requests
-import pandas as pd
 
 
 logger = logging.getLogger(__name__)
-P = ParamSpec("P")
 
 
-class DataDownloader(ABC):
-    """Abstract DataDownloader class"""
+class Downloader(ABC):
+    """
+    Abstract base class defining a downloader interface.
+
+    Attributes:
+        file_path (str): The path to store the downloaded file.
+        table (str | None): The db table name (optional, can be None if data won't be loaded into db).
+        schema (str | None): The db schema name (optional, can be None if data won't be loaded into db).
+        meta (Dict | None): Metadata used for storing additional info about the object.
+
+    """
+    def __init__(self, file_path: str, table: str | None, schema: str | None, meta: Dict | None) -> None:
+        self.file_path = file_path
+        self.table = table
+        self.schema = schema
+        self.meta = meta or {}
 
     @abstractmethod
-    def download(self, url: str, **kwargs: Callable[P, Any]) -> Any: # pragma: no cover
-        """abstract download function"""
+    def download(self, session: Any | None = None) -> Any:
+        """
+        Abstract method to download data.
+
+        Parameters:
+            session (Any | None): Optional session to use for the download.
+
+        Returns:
+            Any: Content retrieved from the download.
+        """
 
 
-class CSVRequestsDataDownloader:
+class APIDownloader(Downloader):
     """
-    Class for handling CSV downloads from internet.
+    Implementation of a downloader for API endpoints.
 
-    Class also handles csv with unnecessary commas if present in file which causes read_csv() to fail.
-
-    Methods:
-        download(url, encoding, **kwargs): Download csv data
+    Attributes:
+        method (str): The HTTP method used for the API request.
+        url (str): The URL for the API endpoint.
+        file_path (str): The path to store the downloaded file.
+        table (str | None): The table name (optional, can be None if not applicable).
+        schema (str | None): The schema name (optional, can be None if not applicable).
+        meta (Dict | None): Metadata used for storing additional info about the object.
+        download_kwargs (dict): Additional keyword arguments for the download.
     """
+    def __init__(
+            self,
+            method: str,
+            url: str,
+            file_path: str,
+            table: str | None = None,
+            schema: str | None = None,
+            meta: Dict | None = None,
+            **download_kwargs: dict
+        ) -> None:
+        super().__init__(file_path, table=table, schema=schema, meta=meta)
+        self.method = method
+        self.url = url
+        self.download_kwargs = download_kwargs
 
-    def __init__(self, encoding: str = 'utf-8') -> None:
+
+    def __repr__(self) -> str:
         """
-        Init csv downloader class.
-
-        Parameters:
-            encoding (str): Bytes encoding method
+        Returns a representation of the object.
 
         Returns:
-            None
+            str: Representation of the object.
         """
-        self.encoding = encoding
-        self._session = requests.Session()
+        return f'APIDownloader(file_path={self.file_path}, method={self.method}, '\
+            f'url={self.url}, db={self.schema}/{self.table})'
 
-    @staticmethod
-    def _is_empty_line(line: list[str]) -> bool:
+    def __str__(self) -> str:
         """
-        Determine if line is empty.
-
-        Parameters:
-            line (str): List of values in line
-        
-        Returns:
-            is_empty (bool): Whether the line is empty
-        """
-        if not any(line):
-            return True
-        return False
-
-    def _parse_byte_line(self, line: bytes) -> list[str]:
-        """
-        Parse bytes file line and split unto list.
-
-        Parameters:
-            line (bytes): Line bytes
+        Returns a string representation of the object.
 
         Returns:
-            line (list[str]): Encoded list of str values
+            str: String representation of the object.
         """
-        return line.decode(self.encoding).split(',')
+        return f'APIDownloader {self.url}@{self.file_path}'
 
-    def download(self, url: str) -> pd.DataFrame:
+    def download(self, session: requests.Session | None = None) -> bytes:
         """
-        Download csv using request in order to parse line by line and handle potential data issues.
+        Download data from the specified URL using the provided method and options.
 
         Parameters:
-            url (str): Data url
+            session (requests.Session | None): Optional requests session to use for the download.
 
         Returns:
-            data (pd.DataFrame): DataFrame with downloaded data
+            bytes: Content retrieved from the download.
+
+        Raises:
+            requests.HTTPError: If the response status code is not a success code.
         """
-        resp = self._session.get(url)
-        resp.raise_for_status()
-        content = resp.iter_lines()
-        header = self._parse_byte_line(next(content))
-        lines = [
-            parsed_line[:len(header)] for line in content
-            if not self._is_empty_line(parsed_line := self._parse_byte_line(line))
-        ]
-        data = pd.DataFrame(data=lines, columns=header)
-        return data
+        logger.info('DOWNLOADING: %s', self.url)
+        session = session or requests.Session()
+        response = session.request(self.method, self.url, **self.download_kwargs)
+        response.raise_for_status()
+        return response.content

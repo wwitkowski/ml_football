@@ -1,138 +1,168 @@
-base_url: "https://www.football-data.co.uk/mmz4281/"
-default_start_date: "2000-07-01"
-leagues:
-  - "E0"
-  - "E1"
-  - "E2"
-  - "E3"
-  - "EC"
-  - "SC0"
-  - "SC1"
-  - "SC2"
-  - "SC3"
-  - "D1"
-  - "D2"
-  - "SP1"
-  - "SP2"
-  - "I1"
-  - "I2"
-  - "F1"
-  - "F2"
-  - "B1"
-  - "N1"
-  - "P1"
-  - "T1"
-  - "G1"
+seasonal_dataset:
+  base_url: "https://www.football-data.co.uk/mmz4281"
+  leagues:
+    - "E0"
+    - "E1"
+    - "E2"
+    - "I1"
+    - "I2"
+    - "D1"
+    - "D2"
+    - "F1"
+    - "SP1"
+    - "SP2"
+    - "T1"
+    - "P1"
+    - "B1"
+    - "N1"
+  validation:
+    columns_required:
+      - "Date"
+      - "HomeTeam"
+      - "AwayTeam"
+      - "FTHG"
+      - "FTAG"
+new_dataset:
+  base_url: "https://www.football-data.co.uk/new"
+  leagues:
+    - "DNK"
+    - "POL"
+    - "BRA"
+    - "USA"
+    - "ARG"
+    - "NOR"
+    - "SWE"
+  validation:
+    columns_required:
+      - "Date"
+      - "Home"
+      - "Away"
+      - "HG"
+      - "AG"
+database:
+  table_name: 'football_data_co_uk'
+  date_column: 'match_date'
 preprocessing:
-  date_column: 'Date'
-  date_formats:
-   - '%d/%m/%y'
-   - '%d/%m/%Y'
-  not_null_columns:
-    - "Date"
-    - "HomeTeam"
-    - "AwayTeam"
-    - "FTHG"
-    - "FTAG"
   columns_select:
-    - "Div"
-    - "Date"
-    - "Time"
-    - "HomeTeam"
-    - "AwayTeam"
-    - "FTHG"
-    - "FTAG"
-    - "FTR"
-    - "HTHG"
-    - "HTAG"
-    - "HTR"
-    - "HS"
-    - "AS"
-    - "HST"
-    - "AST"
-    - "HF"
-    - "AF"
-    - "HC"
-    - "AC"
-    - "HY"
-    - "AY"
-    - "HR"
-    - "AR"
-    - "MaxCH"
-    - "MaxCD"
-    - "MaxCA"
-    - "AvgCH"
-    - "AvgCD"
-    - "AvgCA"
-    - "MaxC>2.5"
-    - "MaxC<2.5"
-    - "AvgC>2.5"
-    - "AvgC<2.5"
-  columns_rename:
-    Div: "league"
-    Date: "match_date"
-    Time: "match_time"
-    HomeTeam: "home_team"
-    AwayTeam: "away_team"
-    FTHG: "home_score"
-    FTAG: "away_score"
-    FTR: "match_result"
-    HTHG: "home_ht_score"
-    HTAG: "away_ht_score"
-    HTR: "ht_result"
-    HS: "home_shots"
-    AS: "away_shots"
-    HST: "home_shots_ot"
-    AST: "away_shots_ot"
-    HF: "home_fouls"
-    AF: "away_fouls"
-    HC: "home_corners"
-    AC: "away_corners"
-    HY: "home_yellow"
-    AY: "away_yellow"
-    HR: "home_red"
-    AR: "away_red"
-    MaxCH: "maxch"
-    MaxCD: "maxcd"
-    MaxCA: "maxca"
-    AvgCH: "avgch"
-    AvgCD: "avgcd"
-    AvgCA: "avgca"
-    MaxC>2.5: "maxc_over"
-    MaxC<2.5: "maxc_under"
-    AvgC>2.5: "avgc_over"
-    AvgC<2.5: "avgc_under"
+    - "league"
+    - "season"
+    - "match_date"
+    - "match_time"
+    - "home_team"
+    - "away_team"
+    - "home_score"
+    - "away_score"
+    - "match_result"
+    - "home_ht_score"
+    - "away_ht_score"
+    - "ht_result"
+    - "home_shots"
+    - "away_shots"
+    - "home_shots_ot"
+    - "away_shots_ot"
+    - "home_fouls"
+    - "away_fouls"
+    - "home_corners"
+    - "away_corners"
+    - "home_yellow"
+    - "away_yellow"
+    - "home_red"
+    - "away_red"
+    - "maxh"
+    - "maxd"
+    - "maxa"
+    - "avgh"
+    - "avgd"
+    - "avga"
+    - "max_over"
+    - "max_under"
+    - "avg_over"
+    - "avg_under"
+  parse_dates:
+    col:
+      'match_date'
+    date_formats:
+      - '%d/%m/%y'
+      - '%d/%m/%Y'
+  replace:
+      to_replace: ''
+      value: null
+  dropna:
+    subset:
+      - "match_date"
+      - "home_team"
+      - "away_team"
+      - "home_score"
+      - "away_score"
+  convert_dtypes:
+    convert_string: False
+    convert_boolean: False
+  rename:
+    columns:
+      Div: "league"
+      Season: "season"
+      League: "league"
+      Date: "match_date"
+      Time: "match_time"
+      Home: "home_team"
+      Away: "away_team"
+      HomeTeam: "home_team"
+      AwayTeam: "away_team"
+      HG: "home_score"
+      AG: "away_score"
+      FTHG: "home_score"
+      FTAG: "away_score"
+      FTR: "match_result"
+      Res: "match_result"
+      HTHG: "home_ht_score"
+      HTAG: "away_ht_score"
+      HTR: "ht_result"
+      HS: "home_shots"
+      AS: "away_shots"
+      HST: "home_shots_ot"
+      AST: "away_shots_ot"
+      HF: "home_fouls"
+      AF: "away_fouls"
+      HC: "home_corners"
+      AC: "away_corners"
+      HY: "home_yellow"
+      AY: "away_yellow"
+      HR: "home_red"
+      AR: "away_red"
+      MaxH: "maxh"
+      MaxD: "maxd"
+      MaxA: "maxa"
+      AvgH: "avgh"
+      AvgD: "avgd"
+      AvgA: "avga"
+      Max>2.5: "max_over"
+      Max<2.5: "max_under"
+      Avg>2.5: "avg_over"
+      Avg<2.5: "avg_under"
   columns_to_numeric:
-    - FTHG
-    - FTAG
-    - HTHG
-    - HTAG
-    - HS
-    - AS
-    - HST
-    - AST
-    - HF
-    - AF
-    - HC
-    - AC
-    - HY
-    - AY
-    - HR
-    - AR
-    - MaxCH
-    - MaxCD
-    - MaxCA
-    - AvgCH
-    - AvgCD
-    - AvgCA
-    - MaxC>2.5
-    - MaxC<2.5
-    - AvgC>2.5
-    - AvgC<2.5
-validation:
-  columns_required:
-    - "Date"
-    - "HomeTeam"
-    - "AwayTeam"
-    - "FTHG"
-    - "FTAG"
+    - home_score
+    - away_score
+    - home_ht_score
+    - away_ht_score
+    - home_shots
+    - away_shots
+    - "home_shots_ot"
+    - "away_shots_ot"
+    - "home_fouls"
+    - "away_fouls"
+    - "home_corners"
+    - "away_corners"
+    - "home_yellow"
+    - "away_yellow"
+    - "home_red"
+    - "away_red"
+    - "maxh"
+    - "maxd"
+    - "maxa"
+    - "avgh"
+    - "avgd"
+    - "avga"
+    - "max_over"
+    - "max_under"
+    - "avg_over"
+    - "avg_under"
