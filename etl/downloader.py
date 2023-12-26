@@ -74,10 +74,8 @@ class APIDownloader(Downloader):
         Returns:
             str: Representation of the object.
         """
-        return f'''
-            APIDownloader(file_path={self.file_path}, method={self.method}, 
-            url={self.url}, db={self.schema}/{self.table})
-        '''
+        return f'APIDownloader(file_path={self.file_path}, method={self.method}, '\
+            f'url={self.url}, db={self.schema}/{self.table})'
 
     def __str__(self) -> str:
         """

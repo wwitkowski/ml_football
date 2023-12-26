@@ -36,7 +36,7 @@ def test_save(mock_file):
     with patch('etl.files.open', mock_open(), create=True) as m:
         mock_file.save('example data', mode='w')
 
-    m.assert_called_once_with(Path('folder/file.csv'), 'w')
+    m.assert_called_once_with(Path('folder/file.csv'), 'w', encoding='utf-8')
     handle = m()
     handle.write.assert_called_once_with('example data')
 
@@ -45,7 +45,7 @@ def test_read(mock_file):
     with patch('etl.files.open', mock_open(read_data=b'example data'), create=True) as m:
         test_content = mock_file.read(mode='rb')
 
-    m.assert_called_once_with(Path('folder/file.csv'), 'rb')
+    m.assert_called_once_with(Path('folder/file.csv'), 'rb', encoding=None)
     assert test_content == b'example data'
 
 

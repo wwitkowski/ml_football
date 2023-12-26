@@ -34,7 +34,7 @@ class File:
         """
         return self.path.is_file()
 
-    def read(self, mode: str = 'rb', encoding='utf-8') -> bytes:
+    def read(self, mode: str = 'rb', encoding=None) -> bytes:
         """
         Read file. Currently only mode that reads bytes is supported.
 
