@@ -1,4 +1,4 @@
-"""Datasets mergers"""
+"""Custom Datasets Mergers"""
 
 from abc import ABC, abstractmethod
 import pandas as pd

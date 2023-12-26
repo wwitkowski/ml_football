@@ -1,62 +1,101 @@
-"""Data parsers"""
-
+"""Custom Data Parsers"""
 from abc import ABC, abstractmethod
-
-import requests
+import logging
+from typing import List
 import pandas as pd
+
+from etl.exceptions import DataParserError
+
+
+logger = logging.getLogger(__name__)
 
 
 class DataParser(ABC):
+    """
+    Abstract base class for data parsers.
+    """
 
     @abstractmethod
-    def parse(response: requests.models.Response):
-        pass
+    def parse(self, content: bytes) -> pd.DataFrame:
+        """
+        Abstract method to parse data.
 
+        Parameters:
+            response (bytes): Raw data to be parsed
 
-class BaseParser(DataParser):
+        Returns:
+            pd.DataFrame: Parsed data in DataFrame format
 
-    def parse(response: requests.models.Response):
-        return response.json()
+        Raises:
+            DataParserError: If there's an issue during parsing
+        """
 
 
 class CSVDataParser(DataParser):
+    """
+    Parses CSV data into a Pandas DataFrame.
 
-    def __init__(self, encoding='utf-8'):
+    Attributes:
+        header (bool): Whether the CSV file has a header row.
+        encoding (str): The encoding of the CSV content.
+    """
+
+    def __init__(self, header: bool = True, encoding: str = 'utf-8'):
+        """
+        Initialize CSVDataParser.
+
+        Parameters:
+            header (bool, optional): Whether the CSV file has a header row (default is True)
+            encoding (str, optional): The encoding of the CSV content (default is 'utf-8')
+        """
+        self.header = header
         self.encoding = encoding
 
     @staticmethod
-    def _is_empty_line(line: list[str]) -> bool:
+    def _is_empty_line(line: List[str]) -> bool:
         """
-        Determine if line is empty.
+        Check if a line contains only empty values.
 
         Parameters:
-            line (str): List of values in line
-        
-        Returns:
-            is_empty (bool): Whether the line is empty
-        """
-        if not any(line):
-            return True
-        return False
+            line (List[str]): List of values in the line
 
-    def _parse_byte_line(self, line: bytes) -> list[str]:
+        Returns:
+            bool: Whether the line is empty
         """
-        Parse bytes file line and split unto list.
+        return not any(line)
+
+    def parse(self, content: bytes) -> pd.DataFrame:
+        """
+        Parse CSV content into a Pandas DataFrame.
 
         Parameters:
-            line (bytes): Line bytes
+            content (bytes): Raw content of CSV data
 
         Returns:
-            line (list[str]): Encoded list of str values
+            pd.DataFrame: Parsed CSV data in DataFrame format, or None if parsing fails
+
+        Raises:
+            DataParserError: If there's an issue during parsing
         """
-        return line.decode(self.encoding).split(',')
-    
-    def parse(self, response: requests.models.Response):
-        content = response.iter_lines()
-        header = self._parse_byte_line(next(content))
+        if len(content) < 2:
+            logger.error('Error parsing content: Not enough content to parse.')
+            raise DataParserError('Not enough content to parse')
+
+        try:
+            decoded = content.decode(self.encoding)
+        except UnicodeDecodeError as exc:
+            logger.error('Error parsing content: Could not decode content.')
+            raise DataParserError('Could not decode content') from exc
+        except AttributeError as exc:
+            logger.error('Error parsing content: Not a "bytes" object.')
+            raise DataParserError('Content is not a "bytes" object.') from exc
+
+        content_lines = decoded.splitlines()
+        reference_len = len(content_lines[0].split(','))
         lines = [
-            parsed_line[:len(header)] for line in content
-            if not self._is_empty_line(parsed_line := self._parse_byte_line(line))
+            parsed_line[:reference_len] for line in content_lines
+            if not self._is_empty_line(parsed_line := line.split(','))
         ]
-        data = pd.DataFrame(data=lines, columns=header)
-        return data
+        if self.header:
+            return pd.DataFrame(data=lines[1:], columns=lines[0])
+        return pd.DataFrame(data=lines)

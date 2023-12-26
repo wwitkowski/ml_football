@@ -1,67 +1,68 @@
 # pylint: skip-file
-from typing import ParamSpec
-from unittest.mock import patch
-
+from unittest.mock import Mock, patch
 import pytest
-import pandas as pd
-
-from etl.downloader import CSVRequestsDataDownloader
-
-
-P = ParamSpec("P")
+import requests
+from etl.downloader import APIDownloader
 
 
-@pytest.fixture(autouse=True)
-def patch_requests_get():
-    """mock requests.get"""
-    with patch('requests.Session.get') as mock_get:
-        yield mock_get
+@pytest.fixture
+def mock_request():
+    with patch('etl.downloader.requests.Session.request') as mock_session:
+        yield mock_session
 
 
-def test_csv_downloader_init() -> None:
-    encoding = 'utf-8'
-    downloader = CSVRequestsDataDownloader(encoding=encoding)
-    assert downloader.encoding == encoding
+def test_create_downloader():
+    downloader = APIDownloader(
+        'GET',
+        'http://test_url.com',
+        'test_file.txt',
+        'test_table',
+        'test_schema',
+        headers={'header': 'test'}
+    )
+    assert downloader.method == 'GET'
+    assert downloader.url == 'http://test_url.com'
+    assert downloader.file_path == 'test_file.txt'
+    assert downloader.table == 'test_table'
+    assert downloader.schema == 'test_schema'
+    assert downloader.download_kwargs == {'headers': {'header': 'test'}}
+    assert repr(downloader) ==\
+        'APIDownloader(file_path=test_file.txt, method=GET, url=http://test_url.com, db=test_schema/test_table)'
+    assert str(downloader) == 'APIDownloader http://test_url.com@test_file.txt'
 
 
-def test_csv_downloader_valid_csv(patch_requests_get) -> None:
-    def correct_csv_content():
-        content = [
-            b'col1,col2',
-            b'1,4',
-            b'2,5',
-            b'3,6'
-        ]
-        for line in content:
-            yield line
+def test_download(mock_request):
+    downloader = APIDownloader(
+        'GET',
+        'http://test_url.com',
+        'test_file.txt',
+        'test_table',
+        'test_schema',
+        headers={'header': 'test'}
+    )
+    mock_response = Mock()
+    mock_response.status_code = 200
+    mock_response.content = b'Mock data content'
+    mock_request.return_value = mock_response
 
-    url = 'https://example.com/data.csv'
-    expected_data = pd.DataFrame({'col1': ['1', '2', '3'], 'col2': ['4', '5', '6']})
-    patch_requests_get.return_value.iter_lines.return_value = correct_csv_content()
-    downloader = CSVRequestsDataDownloader()
-    data = downloader.download(url)
-    print(data)
-    print(expected_data)
-    pd.testing.assert_frame_equal(data.reset_index(drop=True), expected_data.reset_index(drop=True))
+    content = downloader.download()
+
+    assert content == b'Mock data content'
 
 
-def test_csv_downloader_bad_csv(patch_requests_get) -> None:
-    def bad_csv_content():
-        content = [
-            b'col1,col2,col3',
-            b'1,2,3',
-            b'4,5,6,7',
-            b',,',
-            b''
-        ]
-        for line in content:
-            yield line
+def test_download_fail(mock_request):
+    downloader = APIDownloader(
+        'GET',
+        'http://test_url.com',
+        'test_file.txt',
+        'test_table',
+        'test_schema',
+        headers={'header': 'test'}
+    )
+    mock_response = Mock()
+    mock_response.status_code = 404
+    mock_response.raise_for_status.side_effect = requests.HTTPError("404 Client Error")
+    mock_request.return_value = mock_response
 
-    url = 'https://example.com/data.csv'
-    
-    expected_data = pd.DataFrame({'col1': ['1', '4'], 'col2': ['2', '5'], 'col3': ['3', '6']})
-    patch_requests_get.return_value.iter_lines.return_value = bad_csv_content()
-    
-    downloader = CSVRequestsDataDownloader(encoding='utf-8')
-    data = downloader.download(url)
-    pd.testing.assert_frame_equal(data.reset_index(drop=True), expected_data.reset_index(drop=True))
+    with pytest.raises(requests.exceptions.HTTPError) as err:
+        content = downloader.download()
