@@ -1,3 +1,4 @@
+"""Data Quality Validation Pipeline"""
 import logging
 from typing import Any, Callable, List
 from etl.exceptions import InvalidDataException
@@ -11,7 +12,8 @@ class DataQualityValidator:
     Validates data based on specified conditions.
 
     Attributes:
-        conditions (list): List containing tuples of validation conditions, expected results, arguments, and keyword arguments.
+        conditions (list): List containing tuples of validation condition, 
+            expected result, condition args, and kwargs.
     """
     def __init__(self) -> None:
         self.conditions: List[tuple] = []
@@ -33,7 +35,7 @@ class DataQualityValidator:
         """
         self.conditions.append((condition, result, args, kwargs))
         return self
-    
+
     def validate(self, data: Any) -> None:
         """
         Validates the data based on the added conditions.
@@ -45,14 +47,15 @@ class DataQualityValidator:
             InvalidDataException: If any condition fails during validation.
         """
         for condition, expected_result, args, kwargs in self.conditions:
-            result = condition(data, *args, **kwargs) 
+            result = condition(data, *args, **kwargs)
             if expected_result == result:
                 continue
-            else:
-                logger.warning(
-                    'Validation failed for condition: %s. Expected result: %s, got %s',
-                    condition.__name__, expected_result, result
-                )
-                raise InvalidDataException(
-                    f'Validation failed for condition: {condition.__name__}. Expected result: {expected_result}, got {result}'
-                )
+
+            logger.warning(
+                'Validation failed for condition: %s. Expected result: %s, got %s',
+                condition.__name__, expected_result, result
+            )
+            raise InvalidDataException(
+                f'Validation failed for condition: {condition.__name__}. '
+                f'Expected result: {expected_result}, got {result}'
+            )

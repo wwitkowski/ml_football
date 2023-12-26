@@ -1,3 +1,4 @@
+"""Downlaoder Objects"""
 from abc import ABC, abstractmethod
 import logging
 from typing import Any, Dict
@@ -35,7 +36,6 @@ class Downloader(ABC):
         Returns:
             Any: Content retrieved from the download.
         """
-        pass
 
 
 class APIDownloader(Downloader):
@@ -52,12 +52,12 @@ class APIDownloader(Downloader):
         download_kwargs (dict): Additional keyword arguments for the download.
     """
     def __init__(
-            self, 
-            method: str, 
-            url: str, 
-            file_path: str, 
-            table: str | None = None, 
-            schema: str | None = None, 
+            self,
+            method: str,
+            url: str,
+            file_path: str,
+            table: str | None = None,
+            schema: str | None = None,
             meta: Dict | None = None,
             **download_kwargs: dict
         ) -> None:
@@ -66,7 +66,7 @@ class APIDownloader(Downloader):
         self.url = url
         self.download_kwargs = download_kwargs
 
-    
+
     def __repr__(self) -> str:
         """
         Returns a representation of the object.
@@ -74,7 +74,10 @@ class APIDownloader(Downloader):
         Returns:
             str: Representation of the object.
         """
-        return f'APIDownloader(file_path={self.file_path}, method={self.method}, url={self.url}, db={self.schema}/{self.table})'
+        return f'''
+            APIDownloader(file_path={self.file_path}, method={self.method}, 
+            url={self.url}, db={self.schema}/{self.table})
+        '''
 
     def __str__(self) -> str:
         """
@@ -84,7 +87,7 @@ class APIDownloader(Downloader):
             str: String representation of the object.
         """
         return f'APIDownloader {self.url}@{self.file_path}'
-    
+
     def download(self, session: requests.Session | None = None) -> bytes:
         """
         Download data from the specified URL using the provided method and options.

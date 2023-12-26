@@ -1,3 +1,4 @@
+"""Custom File Managers"""
 from pathlib import Path
 import logging
 
@@ -33,7 +34,7 @@ class File:
         """
         return self.path.is_file()
 
-    def read(self, mode: str = 'rb') -> bytes:
+    def read(self, mode: str = 'rb', encoding='utf-8') -> bytes:
         """
         Read file. Currently only mode that reads bytes is supported.
 
@@ -52,17 +53,17 @@ class File:
         if mode != 'rb':
             raise NotImplementedError('Currently only mode that reads bytes is supported.')
         try:
-            with open(self.path, mode) as f:
+            with open(self.path, mode, encoding=encoding) as f:
                 content = f.read()
         except FileNotFoundError:
             logger.error('File %s not found.', self.path)
             raise
-        except IOError as e:
-            logger.error('Error reading file %s: %s', self.path, e)
+        except IOError as exc:
+            logger.error('Error reading file %s: %s', self.path, exc)
             raise
         return content
 
-    def save(self, content: bytes | str, mode: str = 'wb') -> None:
+    def save(self, content: bytes | str, mode: str = 'wb', encoding='utf-8') -> None:
         """
         Save data to a file.
 
@@ -78,8 +79,8 @@ class File:
         """
         self.path.parent.mkdir(parents=True, exist_ok=True)
         try:
-            with open(self.path, mode) as f:
+            with open(self.path, mode, encoding=encoding) as f:
                 f.write(content)
-        except IOError as e:
-            logger.error('Error writing to file %s: %s', self.path, e)
+        except IOError as exc:
+            logger.error('Error writing to file %s: %s', self.path, exc)
             raise

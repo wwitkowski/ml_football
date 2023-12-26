@@ -1,3 +1,4 @@
+"""Custom Data Parsers"""
 from abc import ABC, abstractmethod
 import logging
 from typing import List
@@ -15,7 +16,7 @@ class DataParser(ABC):
     """
 
     @abstractmethod
-    def parse(self, response: bytes) -> pd.DataFrame:
+    def parse(self, content: bytes) -> pd.DataFrame:
         """
         Abstract method to parse data.
 
@@ -28,7 +29,6 @@ class DataParser(ABC):
         Raises:
             DataParserError: If there's an issue during parsing
         """
-        pass
 
 
 class CSVDataParser(DataParser):
@@ -83,12 +83,12 @@ class CSVDataParser(DataParser):
 
         try:
             decoded = content.decode(self.encoding)
-        except UnicodeDecodeError:
+        except UnicodeDecodeError as exc:
             logger.error('Error parsing content: Could not decode content.')
-            raise DataParserError('Could not decode content')
-        except AttributeError:
+            raise DataParserError('Could not decode content') from exc
+        except AttributeError as exc:
             logger.error('Error parsing content: Not a "bytes" object.')
-            raise DataParserError('Content is not a "bytes" object.')
+            raise DataParserError('Content is not a "bytes" object.') from exc
 
         content_lines = decoded.splitlines()
         reference_len = len(content_lines[0].split(','))
@@ -98,5 +98,4 @@ class CSVDataParser(DataParser):
         ]
         if self.header:
             return pd.DataFrame(data=lines[1:], columns=lines[0])
-        else:
-            return pd.DataFrame(data=lines)
+        return pd.DataFrame(data=lines)

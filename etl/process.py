@@ -1,3 +1,4 @@
+"""Download ETL Processor"""
 import time
 import logging
 from typing import Any, Callable, Iterator, List, Tuple, Type, TypeVar
@@ -39,12 +40,12 @@ class ETL:
         """
         self.sleep_time = sleep_time
         self.file_handler = file_handler
-    
+
     def extract(
-            self, 
+            self,
             queue: List[DownloaderObject],
             mode: str,
-            session: Any | None = None, 
+            session: Any | None = None,
             callback: Callable | None = None
         ) -> Iterator[DownloaderObject]:
         """
@@ -77,10 +78,10 @@ class ETL:
             yield obj
 
     def transform(
-            self, 
-            obj: DownloaderObject, 
-            parser: DataParser | None = None, 
-            transform_pipeline: TransformPipeline | None = None, 
+            self,
+            obj: DownloaderObject,
+            parser: DataParser | None = None,
+            transform_pipeline: TransformPipeline | None = None,
             validation_pipeline: DataQualityValidator | None = None
         ) -> Tuple[DownloaderObject, Any]:
         """
@@ -97,7 +98,7 @@ class ETL:
         """
         file = self.file_handler(obj.file_path)
         data = file.read()
-        if parser:  
+        if parser:
             data = parser.parse(data)
         if validation_pipeline:
             validation_pipeline.validate(data)
@@ -106,7 +107,7 @@ class ETL:
         return (obj, data)
 
     def load(
-            self, 
+            self,
             dataset: Tuple[DownloaderObject, pd.DataFrame],
             session: Any,
             mode: str,

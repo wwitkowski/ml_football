@@ -45,12 +45,12 @@ def main() -> None:
             .add_operation(pd.DataFrame.replace, **preprocessing_config['replace'])
             .add_operation(pd.DataFrame.dropna, **preprocessing_config['dropna'])
             .add_operation(
-                pd.DataFrame.apply, 
-                lambda col: pd.to_numeric(col, errors='coerce') 
+                pd.DataFrame.apply,
+                lambda col: pd.to_numeric(col, errors='coerce')
                 if col.name in preprocessing_config['columns_to_numeric'] else col,
                 axis=0
             )
-            .add_operation(pd.DataFrame.convert_dtypes, **preprocessing_config['convert_dtypes']) 
+            .add_operation(pd.DataFrame.convert_dtypes, **preprocessing_config['convert_dtypes'])
     )
 
 
@@ -58,7 +58,7 @@ def main() -> None:
     validation_pipeline = (
         DataQualityValidator()
             .add_condition(
-                lambda df: all(col in df.columns for col in validation_config['columns_required']), 
+                lambda df: all(col in df.columns for col in validation_config['columns_required']),
                 True
             )
     )
@@ -76,7 +76,7 @@ def main() -> None:
             transform_pipeline=transform_pipeline,
             validation_pipeline=validation_pipeline
         )
-        
+
         with Session.begin() as session:
             etl.load(transformed, session, mode=mode)
 

@@ -1,3 +1,4 @@
+"""Date util functions"""
 from datetime import datetime, timedelta
 from typing import Iterator, Tuple, List
 
@@ -60,4 +61,4 @@ def parse_dataframe_dates(data: pd.DataFrame, col: str, date_formats: List[str])
             return data
         except ValueError:
             pass
-    raise DataParserError('None of %s match %s date format', date_formats, col)
+    raise DataParserError(f'None of {date_formats} match {col} date format')
