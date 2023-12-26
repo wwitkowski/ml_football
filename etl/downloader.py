@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 import logging
-from typing import Any
+from typing import Any, Dict
 import requests
 
 
@@ -15,13 +15,15 @@ class Downloader(ABC):
         file_path (str): The path to store the downloaded file.
         table (str | None): The db table name (optional, can be None if data won't be loaded into db).
         schema (str | None): The db schema name (optional, can be None if data won't be loaded into db).
+        meta (Dict | None): Metadata used for storing additional info about the object.
 
     """
-    def __init__(self, file_path: str, table: str | None, schema: str | None) -> None:
+    def __init__(self, file_path: str, table: str | None, schema: str | None, meta: Dict | None) -> None:
         self.file_path = file_path
         self.table = table
         self.schema = schema
-    
+        self.meta = meta or {}
+
     @abstractmethod
     def download(self, session: Any | None = None) -> Any:
         """
@@ -46,6 +48,7 @@ class APIDownloader(Downloader):
         file_path (str): The path to store the downloaded file.
         table (str | None): The table name (optional, can be None if not applicable).
         schema (str | None): The schema name (optional, can be None if not applicable).
+        meta (Dict | None): Metadata used for storing additional info about the object.
         download_kwargs (dict): Additional keyword arguments for the download.
     """
     def __init__(
@@ -53,11 +56,12 @@ class APIDownloader(Downloader):
             method: str, 
             url: str, 
             file_path: str, 
-            table: str | None, 
-            schema: str | None, 
+            table: str | None = None, 
+            schema: str | None = None, 
+            meta: Dict | None = None,
             **download_kwargs: dict
         ) -> None:
-        super().__init__(file_path, table, schema)
+        super().__init__(file_path, table=table, schema=schema, meta=meta)
         self.method = method
         self.url = url
         self.download_kwargs = download_kwargs

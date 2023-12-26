@@ -1,19 +1,20 @@
 import time
 import logging
-from typing import Any, Callable, Iterator, List, Tuple, Type
+from typing import Any, Callable, Iterator, List, Tuple, Type, TypeVar
 
 import pandas as pd
 import requests
 from sqlalchemy import text
+
 from etl.data_parser import DataParser
 from etl.data_quality import DataQualityValidator
-
-from etl.exceptions import InvalidDataException
 from etl.downloader import Downloader
 from etl.files import File
 from etl.transform import TransformPipeline
 
+
 logger = logging.getLogger(__name__)
+DownloaderObject = TypeVar('DownloaderObject', bound='Downloader')
 
 
 class ETL:
@@ -41,25 +42,25 @@ class ETL:
     
     def extract(
             self, 
-            queue: List[Downloader],
+            queue: List[DownloaderObject],
             mode: str,
             session: Any | None = None, 
             callback: Callable | None = None
-        ) -> Iterator[Downloader]:
+        ) -> Iterator[DownloaderObject]:
         """
         Extract data from a queue of downloaders.
 
         Parameters:
-            queue (List[Downloader]): Queue of downloaders
+            queue (List[DownloaderObject]): Queue of downloaders
             mode (str): Extraction mode
             session (Any | None): Extract session
             callback (Callable | None): Callback function for generating new download objects
 
         Yields:
-            Downloader: Object with successfully extracted data
+            DownloaderObject: Object with successfully extracted data
         """
         while queue:
-            obj: Downloader = queue.pop()
+            obj: DownloaderObject = queue.pop()
             file = self.file_handler(obj.file_path)
             if not file.exists() or mode == 'replace':
                 try:
@@ -77,22 +78,22 @@ class ETL:
 
     def transform(
             self, 
-            obj: Downloader, 
+            obj: DownloaderObject, 
             parser: DataParser | None = None, 
             transform_pipeline: TransformPipeline | None = None, 
             validation_pipeline: DataQualityValidator | None = None
-        ) -> Tuple[Downloader, Any]:
+        ) -> Tuple[DownloaderObject, Any]:
         """
         Transform the data using specified pipelines.
 
         Parameters:
-            obj (Downloader): Downloader object
+            obj (DownloaderObject): Downloader object
             parser (DataParser | None): Parser object
             transform_pipeline (TransformPipeline | None): Transform pipeline
             validation_pipeline (DataQualityValidator | None): Validation pipeline
 
         Returns:
-            Tuple[Downloader, Any]: Tuple containing the object and transformed data
+            Tuple[DownloaderObject, Any]: Tuple containing the object and transformed data
         """
         file = self.file_handler(obj.file_path)
         data = file.read()
@@ -106,7 +107,7 @@ class ETL:
 
     def load(
             self, 
-            dataset: Tuple[Downloader, pd.DataFrame],
+            dataset: Tuple[DownloaderObject, pd.DataFrame],
             session: Any,
             mode: str,
         ) -> None:
@@ -114,7 +115,7 @@ class ETL:
         Load data into the database.
 
         Parameters:
-            dataset (Tuple[Downloader, pd.DataFrame]): Tuple containing the object and DataFrame
+            dataset (Tuple[DownloaderObject, pd.DataFrame]): Tuple containing the object and DataFrame
             session (Any): Database session
             mode (str): Load mode
 

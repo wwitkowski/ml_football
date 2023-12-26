@@ -1,4 +1,4 @@
-from typing import Any, Callable
+from typing import Any, Callable, List
 
 class TransformPipeline:
     """
@@ -9,7 +9,7 @@ class TransformPipeline:
     """
 
     def __init__(self) -> None:
-        self._operations = []
+        self._operations: List[tuple] = []
 
     def add_operation(self, operation: Callable, *args: Any, **kwargs: Any) -> 'TransformPipeline':
         """

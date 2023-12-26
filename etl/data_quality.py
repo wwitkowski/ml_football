@@ -1,5 +1,5 @@
 import logging
-from typing import Any, Callable
+from typing import Any, Callable, List
 from etl.exceptions import InvalidDataException
 
 
@@ -14,7 +14,7 @@ class DataQualityValidator:
         conditions (list): List containing tuples of validation conditions, expected results, arguments, and keyword arguments.
     """
     def __init__(self) -> None:
-        self.conditions = []
+        self.conditions: List[tuple] = []
 
     def add_condition(
         self, condition: Callable[..., bool], result: bool, *args: Any, **kwargs: Any

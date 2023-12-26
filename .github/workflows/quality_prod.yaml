@@ -20,4 +20,4 @@ jobs:
     - name: pylint
       run: pylint . --recursive=y
     - name: mypy
-      run: mypy . --config_file - mypy_prod.ini
+      run: mypy . --config-file mypy_prod.ini

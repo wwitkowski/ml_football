@@ -30,8 +30,9 @@ def main() -> None:
         for league in config['seasonal_dataset']['leagues']:
             file_path = f'data/FootballDataCoUK/{season[0].replace("/","_")}/{league}.csv'
             url = f"{config['seasonal_dataset']['base_url']}/{season[0]}/{league}.csv"
-            obj = APIDownloader('GET', url, file_path, 'football_data_co_uk', 'data')
-            obj.season = season[1]
+            obj_meta = {'season': season[1]}
+            obj = APIDownloader(
+                'GET', url, file_path, table='football_data_co_uk', schema='data', meta=obj_meta)
             objects.append(obj)
 
     preprocessing_config = config['preprocessing']
@@ -67,7 +68,8 @@ def main() -> None:
     for item in etl.extract(objects, mode=mode):
         if item is None:
             continue
-        transform_pipeline = transform_base_pipeline.copy().add_operation(pd.DataFrame.assign, season=item.season)
+        transform_pipeline = transform_base_pipeline.\
+            copy().add_operation(pd.DataFrame.assign, season=item.meta['season'])
         transformed = etl.transform(
             item,
             parser = CSVDataParser(),
