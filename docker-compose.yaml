@@ -13,17 +13,3 @@ services:
     volumes: 
       - ./db:/var/lib/postgresql/data
     container_name: postgres_database
-
-  etl:
-    build: 
-      context: .
-      dockerfile: Dockerfile-etl
-    depends_on:
-      - db
-    stdin_open: true
-    tty: true
-    environment:
-      - POSTGRES_HOST=db:5432
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes: 
-      - ./data:/app/data
