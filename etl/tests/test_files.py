@@ -33,8 +33,9 @@ def test_exists(mock_file: File) -> None:
 
 
 def test_save(mock_file):
-    with patch('etl.files.open', mock_open(), create=True) as m:
-        mock_file.save('example data', mode='w')
+    with patch('etl.files.open', mock_open(), create=False) as m:
+        with patch('pathlib.Path.mkdir'):
+            mock_file.save('example data', mode='w')
 
     m.assert_called_once_with(Path('folder/file.csv'), 'w', encoding='utf-8')
     handle = m()
@@ -42,7 +43,7 @@ def test_save(mock_file):
 
 
 def test_read(mock_file):
-    with patch('etl.files.open', mock_open(read_data=b'example data'), create=True) as m:
+    with patch('etl.files.open', mock_open(read_data=b'example data'), create=False) as m:
         test_content = mock_file.read(mode='rb')
 
     m.assert_called_once_with(Path('folder/file.csv'), 'rb', encoding=None)
@@ -55,15 +56,16 @@ def test_invalid_read_mode(mock_file):
 
 
 def test_save_failure(mock_file):
-    with patch('etl.files.open', mock_open(), create=True) as m:
-        handle = m()
-        handle.write.side_effect = IOError()
-        with pytest.raises(IOError):
-            mock_file.save('example data')
+    with patch('etl.files.open', mock_open(), create=False) as m:
+        with patch('pathlib.Path.mkdir'):
+            handle = m()
+            handle.write.side_effect = IOError()
+            with pytest.raises(IOError):
+                mock_file.save('example data')
 
 
 def test_read_failure(mock_file):
-    with patch('etl.files.open', mock_open(read_data=b'example data'), create=True) as m:
+    with patch('etl.files.open', mock_open(read_data=b'example data'), create=False) as m:
         handle = m()
         handle.read.side_effect = IOError()
         with pytest.raises(IOError):
