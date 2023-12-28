@@ -160,6 +160,9 @@ cython_debug/
 #.idea/
 
 # Other
-db/
+postgres_data/
 data/
 .vscode/
+airflow/logs/
+airflow/config/
+airflow/plugins/
