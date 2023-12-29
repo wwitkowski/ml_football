@@ -40,4 +40,4 @@ CREATE TABLE IF NOT EXISTS football_data.football_data_co_uk (
 );
 
 GRANT USAGE ON SCHEMA football_data TO mlfootball_api;
-GRANT SELECT ON ALL TABLES IN SCHEMA football_data TO mlfootball_api;
+GRANT ALL PRIVILEGES ON ALL TABLES IN SCHEMA football_data TO mlfootball_api;
