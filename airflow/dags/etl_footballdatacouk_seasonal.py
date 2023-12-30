@@ -5,7 +5,7 @@ from airflow.providers.docker.operators.docker import DockerOperator
 default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
-    'start_date': datetime(2023, 1, 1),
+    'start_date': datetime(2023, 12, 28),
     'retries': 0
 }
 
