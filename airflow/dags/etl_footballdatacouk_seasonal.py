@@ -27,10 +27,11 @@ task = DockerOperator(
     auto_remove=True,
     mounts=[
         Mount(
-            source='/opt/airflow/data', 
-            target='/app/data', 
+            source='/home/rpi_user/data', 
+            target='/app/data',
             type='bind'
         )
     ],
+    mount_tmp_dir=False,
     command='python -m app/footballdata_co_uk/football_data_co_uk_seasonal'    
 )
