@@ -65,7 +65,7 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
     - /var/run/docker.sock:/var/run/docker.sock
 
-  user: "${AIRFLOW_UID:-50000}:0"
+  user: "${AIRFLOW_UID:-50000}:992"
   depends_on:
     &airflow-common-depends-on
     postgres:
@@ -206,8 +206,6 @@ services:
     build: 
       context: .
       dockerfile: footballdata_co_uk/Dockerfile
-    stdin_open: true
-    tty: true
     environment:
       - POSTGRES_HOST=postgres
       - POSTGRES_PASSWORD=${POSTGRES_DATA_PASSWORD}
