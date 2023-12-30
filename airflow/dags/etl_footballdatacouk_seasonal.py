@@ -1,6 +1,7 @@
 from datetime import datetime
 from airflow import DAG
 from airflow.providers.docker.operators.docker import DockerOperator
+from docker.types import Mount 
 
 default_args = {
     'owner': 'airflow',
@@ -24,6 +25,12 @@ task = DockerOperator(
     network_mode='bridge',
     api_version='auto',
     auto_remove=True,
-    volumes=['./data:/app/data'],
+    mounts=[
+        Mount(
+            source='/home/rpi_user/data', 
+            target='/app/data', 
+            type='bind'
+        )
+    ],
     command='python -m app/footballdata_co_uk/football_data_co_uk_seasonal'    
 )
