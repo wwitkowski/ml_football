@@ -27,7 +27,7 @@ task = DockerOperator(
     auto_remove=True,
     mounts=[
         Mount(
-            source='/home/airflow', 
+            source='/opt/airflow/data', 
             target='/app/data', 
             type='bind'
         )
