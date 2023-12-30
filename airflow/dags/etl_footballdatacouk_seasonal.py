@@ -33,5 +33,5 @@ task = DockerOperator(
         )
     ],
     mount_tmp_dir=False,
-    command='python -m /app/footballdata_co_uk/football_data_co_uk_seasonal'    
+    command='python -m footballdata_co_uk.football_data_co_uk_seasonal'    
 )
