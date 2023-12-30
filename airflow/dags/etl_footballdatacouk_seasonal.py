@@ -1,5 +1,6 @@
 from datetime import datetime
 from airflow import DAG
+from airflow.models import Variable
 from airflow.providers.docker.operators.docker import DockerOperator
 from docker.types import Mount 
 
@@ -32,6 +33,10 @@ task = DockerOperator(
             type='bind'
         )
     ],
+    environment={
+        'POSTGRES_HOST': 'postgres',
+        'POSTGRES_PASSWORD': Variable.get('POSTGRES_DATA_PASSWORD')
+    },
     mount_tmp_dir=False,
     command='python -m footballdata_co_uk.football_data_co_uk_seasonal'    
 )

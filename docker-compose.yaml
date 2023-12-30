@@ -206,6 +206,3 @@ services:
     build: 
       context: .
       dockerfile: footballdata_co_uk/Dockerfile
-    environment:
-      - POSTGRES_HOST=postgres
-      - POSTGRES_PASSWORD=${POSTGRES_DATA_PASSWORD}
