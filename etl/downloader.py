@@ -99,7 +99,7 @@ class APIDownloader(Downloader):
         Raises:
             requests.HTTPError: If the response status code is not a success code.
         """
-        logger.info('DOWNLOADING: %s', self.url)
+        logger.info('DOWNLOADING: %s', self)
         session = session or requests.Session()
         response = session.request(self.method, self.url, **self.download_kwargs)
         response.raise_for_status()

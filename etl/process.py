@@ -124,6 +124,7 @@ class ETL:
             None
         """
         obj, data = dataset
+        logger.info('UPLOADING: %s to %s.%s', obj, obj.schema, obj.table)
         if mode == 'replace':
             session.execute(f"DELETE FROM {obj.schema}.{obj.table}")
             data.to_sql(obj.table, session.bind, schema=obj.schema, if_exists='append')
