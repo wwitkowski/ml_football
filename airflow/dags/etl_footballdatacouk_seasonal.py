@@ -27,7 +27,7 @@ task = DockerOperator(
     auto_remove=True,
     mounts=[
         Mount(
-            source='/home/rpi_user/data', 
+            source='/home/airflow', 
             target='/app/data', 
             type='bind'
         )
