@@ -21,9 +21,9 @@ task = DockerOperator(
     task_id='etl',
     image='ml_football-football_data_co_uk:latest',
     dag=dag,
-    network_mode="bridge",
+    network_mode='bridge',
     api_version='auto',
     auto_remove=True,
-    mounts=['./data:/app/data'],
+    volumes=['./data:/app/data'],
     command='python -m app/footballdata_co_uk/football_data_co_uk_seasonal'    
 )
