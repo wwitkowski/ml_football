@@ -63,8 +63,8 @@ x-airflow-common:
     - ${AIRFLOW_PROJ_DIR:-.}/logs:/opt/airflow/logs
     - ${AIRFLOW_PROJ_DIR:-.}/config:/opt/airflow/config
     - ${AIRFLOW_PROJ_DIR:-.}/plugins:/opt/airflow/plugins
+    - ${AIRFLOW_PROJ_DIR:-.}/data:/opt/airflow/data
     - /var/run/docker.sock:/var/run/docker.sock
-    - /home/rpi_user/data:/opt/airflow/data
 
   user: "${AIRFLOW_UID:-50000}:992"
   depends_on:
@@ -185,7 +185,7 @@ services:
       _AIRFLOW_WWW_USER_USERNAME: ${_AIRFLOW_WWW_USER_USERNAME:-airflow}
       _AIRFLOW_WWW_USER_PASSWORD: ${_AIRFLOW_WWW_USER_PASSWORD:-airflow}
       _PIP_ADDITIONAL_REQUIREMENTS: ''
-    user: "${AIRFLOW_UID:-50000}:0"
+    user: "0:0"
     container_name: airflow_init
     volumes:
       - ${AIRFLOW_PROJ_DIR:-.}:/sources
