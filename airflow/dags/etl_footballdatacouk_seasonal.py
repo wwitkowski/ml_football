@@ -6,15 +6,15 @@ default_args = {
     'owner': 'airflow',
     'depends_on_past': False,
     'start_date': datetime(2023, 1, 1),
-    'max_active_runs': 1,
-    'retries': 0,
-    'catchup': False
+    'retries': 0
 }
 
 dag = DAG(
     'footballdata_co_uk_seasonal_download',
     default_args=default_args,
-    schedule_interval='0 10 * * SUN,MON,TUE'
+    schedule_interval='0 10 * * SUN,MON,TUE',
+    catchup=False,
+    max_active_runs=1
 )
 
 task = DockerOperator(
