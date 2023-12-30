@@ -35,9 +35,9 @@ def test_exists(mock_file: File) -> None:
 def test_save(mock_file):
     with patch('etl.files.open', mock_open(), create=False) as m:
         with patch('pathlib.Path.mkdir'):
-            mock_file.save('example data', mode='w')
+            mock_file.save('example data', mode='wb')
 
-    m.assert_called_once_with(Path('folder/file.csv'), 'w', encoding='utf-8')
+    m.assert_called_once_with(Path('folder/file.csv'), 'wb', encoding=None)
     handle = m()
     handle.write.assert_called_once_with('example data')
 
