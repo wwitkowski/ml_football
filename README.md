@@ -10,4 +10,4 @@
     - Add user to docker group: https://docs.docker.com/engine/install/linux-postinstall/
     - Clone git repository: git clone <url>
     - Fetch main: git fetch origin main
-    - Deploy: docker compose up
+    - Deploy: docker compose up -d
