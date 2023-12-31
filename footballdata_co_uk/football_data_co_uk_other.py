@@ -37,7 +37,7 @@ def main() -> None:
             continue
         transformed = etl.transform(
             item,
-            parser = CSVDataParser(),
+            parser = CSVDataParser(encoding='unicode_escape'),
             transform_pipeline=transform_pipeline,
             validation_pipeline=validation_pipeline
         )
