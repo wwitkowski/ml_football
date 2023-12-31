@@ -124,6 +124,7 @@ class ETL:
             None
         """
         obj, data = dataset
+        logger.info('UPLOADING: %s to %s.%s', obj, obj.schema, obj.table)
         if mode == 'replace':
             session.execute(f"DELETE FROM {obj.schema}.{obj.table}")
             data.to_sql(obj.table, session.bind, schema=obj.schema, if_exists='append')
@@ -132,6 +133,6 @@ class ETL:
             columns = ', '.join(data.columns)
             query = text(
                 f"INSERT INTO {obj.schema}.{obj.table} ({columns}) VALUES ({placeholders}) "
-                f"ON CONFLICT DO UPDATE SET {', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
+                f"ON CONFLICT ON CONSTRAINT fd_unique_match DO UPDATE SET {', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
             )
             session.execute(query, [dict(row) for row in data.to_dict(orient='records')])

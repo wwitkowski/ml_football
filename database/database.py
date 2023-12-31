@@ -5,5 +5,5 @@ from sqlalchemy.orm import sessionmaker as _sessionmaker
 
 
 engine = _create_engine(
-    f"postgresql://postgres:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}/ml_football")
+    f"postgresql+psycopg2://mlfootball_api:{os.getenv('POSTGRES_PASSWORD')}@{os.getenv('POSTGRES_HOST')}/mlfootball")
 Session = _sessionmaker(bind=engine)

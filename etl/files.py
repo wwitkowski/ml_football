@@ -34,7 +34,7 @@ class File:
         """
         return self.path.is_file()
 
-    def read(self, mode: str = 'rb', encoding=None) -> bytes:
+    def read(self, mode: str = 'rb', encoding: str | None = None) -> bytes:
         """
         Read file. Currently only mode that reads bytes is supported.
 
@@ -63,7 +63,7 @@ class File:
             raise
         return content
 
-    def save(self, content: bytes | str, mode: str = 'wb', encoding='utf-8') -> None:
+    def save(self, content: bytes | str, mode: str = 'wb', encoding: str | None = None) -> None:
         """
         Save data to a file.
 
@@ -78,6 +78,7 @@ class File:
             IOError: If an error occurs while writing to the file.
         """
         self.path.parent.mkdir(parents=True, exist_ok=True)
+        logger.info('Saving data to file %s.', self.path)
         try:
             with open(self.path, mode, encoding=encoding) as f:
                 f.write(content)
