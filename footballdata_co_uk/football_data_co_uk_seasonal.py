@@ -50,7 +50,7 @@ def main() -> None:
             copy().add_operation(pd.DataFrame.assign, season=item.meta['season'])
         transformed = etl.transform(
             item,
-            parser = CSVDataParser(),
+            parser = CSVDataParser(encoding='unicode_escape'),
             transform_pipeline=transform_pipeline,
             validation_pipeline=validation_pipeline
         )
