@@ -23,7 +23,7 @@ def main() -> None:
     for league in config['new_dataset']['leagues']:
         file_path = f'data/FootballDataCoUK/{league}/{league}.csv'
         url = f"{config['new_dataset']['base_url']}/{league}.csv"
-        obj = APIDownloader('GET', url, file_path, table='football_data_co_uk', schema='data')
+        obj = APIDownloader('GET', url, file_path, table='football_data_co_uk', schema='football_data')
         objects.append(obj)
 
     preprocessing_config = config['preprocessing']

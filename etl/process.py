@@ -133,6 +133,6 @@ class ETL:
             columns = ', '.join(data.columns)
             query = text(
                 f"INSERT INTO {obj.schema}.{obj.table} ({columns}) VALUES ({placeholders}) "
-                f"ON CONFLICT DO UPDATE SET {', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
+                f"ON CONFLICT ON CONSTRAINT fd_unique_match DO UPDATE SET {', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
             )
             session.execute(query, [dict(row) for row in data.to_dict(orient='records')])

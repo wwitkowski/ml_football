@@ -32,7 +32,7 @@ def main() -> None:
             url = f"{config['seasonal_dataset']['base_url']}/{season[0]}/{league}.csv"
             obj_meta = {'season': season[1]}
             obj = APIDownloader(
-                'GET', url, file_path, table='football_data_co_uk', schema='data', meta=obj_meta)
+                'GET', url, file_path, table='football_data_co_uk', schema='football_data', meta=obj_meta)
             objects.append(obj)
 
     preprocessing_config = config['preprocessing']
