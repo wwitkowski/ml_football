@@ -6,7 +6,7 @@ from etl.date_utils import parse_dataframe_dates
 from etl.transform import TransformPipeline
 
 
-def get_transform_pipeline(config):
+def get_transform_pipeline(config) -> TransformPipeline:
     return (
         TransformPipeline()
             .add_operation(pd.DataFrame.rename, **config['rename'])
@@ -25,7 +25,7 @@ def get_transform_pipeline(config):
         )
 
 
-def get_validation_pipeline(config):
+def get_validation_pipeline(config) -> DataQualityValidator:
     return (
         DataQualityValidator()
             .add_condition(
