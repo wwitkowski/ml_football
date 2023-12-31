@@ -21,4 +21,4 @@ jobs:
     - name: test ETL
       run: |
         pip install -r etl/requirements.txt
-        pytest --cov --cov-fail-under=50
+        pytest etl/tests/ --cov --cov-fail-under=50
