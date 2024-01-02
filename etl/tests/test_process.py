@@ -56,7 +56,7 @@ def test_extract_file_exists_mode_append(mock_download_object, mock_file):
     etl = ETL(file_handler=mock_file)
     return_objs = list(etl.extract(test_queue, mode='append'))
 
-    assert len(return_objs) == 1
+    assert len(return_objs) == 0
     mock_download_object.download.assert_not_called()
     handle = mock_file()
     handle.exists.assert_called_once()

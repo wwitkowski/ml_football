@@ -7,6 +7,7 @@ import yaml
 
 from database.database import Session
 from etl.data_parser import CSVDataParser
+from etl.download_strategy import ReplaceStrategy
 from etl.process import ETL
 from etl.downloader import APIDownloader
 from footballdata_co_uk.pipelines import get_transform_pipeline, get_validation_pipeline
@@ -32,17 +33,18 @@ def main() -> None:
     validation_pipeline = get_validation_pipeline(validation_config)
 
     etl = ETL(sleep_time=3)
-    for item in etl.extract(objects, mode='replace'):
-        if item is None:
-            continue
-        transformed = etl.transform(
-            item,
-            parser = CSVDataParser(encoding='unicode_escape'),
-            transform_pipeline=transform_pipeline,
-            validation_pipeline=validation_pipeline
-        )
-        with Session.begin() as session:
-            etl.load(transformed, session, mode='append')
+    download_strategy = ReplaceStrategy()
+    with Session.begin() as dsession:
+        for item in etl.extract(objects, strategy=download_strategy):
+            if item is None:
+                continue
+            transformed = etl.transform(
+                item,
+                parser = CSVDataParser(encoding='unicode_escape'),
+                transform_pipeline=transform_pipeline,
+                validation_pipeline=validation_pipeline
+            )
+            etl.load(transformed, dsession, mode='append')
 
 
 if __name__ == '__main__':

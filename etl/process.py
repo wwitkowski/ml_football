@@ -9,13 +9,13 @@ from sqlalchemy import text
 
 from etl.data_parser import DataParser
 from etl.data_quality import DataQualityValidator
-from etl.downloader import Downloader
+from etl.download_strategy import AppendStrategy, DownloadStrategy
+from etl.downloader import Downloader, DownloaderObject
 from etl.files import File
 from etl.transform import TransformPipeline
 
 
 logger = logging.getLogger(__name__)
-DownloaderObject = TypeVar('DownloaderObject', bound='Downloader')
 
 
 class ETL:
@@ -44,7 +44,7 @@ class ETL:
     def extract(
             self,
             queue: List[DownloaderObject],
-            mode: str,
+            strategy: DownloadStrategy = AppendStrategy(),
             session: Any | None = None,
             callback: Callable | None = None
         ) -> Iterator[DownloaderObject]:
@@ -53,7 +53,7 @@ class ETL:
 
         Parameters:
             queue (List[DownloaderObject]): Queue of downloaders
-            mode (str): Extraction mode
+            mode (DownloadStrategy): Extraction strategy
             session (Any | None): Extract session
             callback (Callable | None): Callback function for generating new download objects
 
@@ -63,7 +63,7 @@ class ETL:
         while queue:
             obj: DownloaderObject = queue.pop()
             file = self.file_handler(obj.file_path)
-            if not file.exists() or mode == 'replace':
+            if strategy.is_download_required(obj, file):
                 try:
                     content = obj.download(session)
                 except requests.exceptions.HTTPError as err:
@@ -71,11 +71,12 @@ class ETL:
                     time.sleep(self.sleep_time)
                     continue
                 file.save(content)
+                time.sleep(self.sleep_time)
+                yield obj
             if callback:
                 new_objects = callback(content)
                 queue.extend(new_objects)
-            time.sleep(self.sleep_time)
-            yield obj
+
 
     def transform(
             self,

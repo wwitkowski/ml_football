@@ -1,11 +1,12 @@
 """Downlaoder Objects"""
 from abc import ABC, abstractmethod
 import logging
-from typing import Any, Dict
+from typing import Any, Dict, TypeVar
 import requests
 
 
 logger = logging.getLogger(__name__)
+DownloaderObject = TypeVar('DownloaderObject', bound='Downloader')
 
 
 class Downloader(ABC):
