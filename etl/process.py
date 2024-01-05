@@ -74,7 +74,7 @@ class ETL:
                 time.sleep(self.sleep_time)
                 yield obj
             if callback:
-                new_objects = callback(content)
+                new_objects = callback(file.read())
                 queue.extend(new_objects)
 
 

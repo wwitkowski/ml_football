@@ -30,9 +30,9 @@ class AppendStrategy(DownloadStrategy):
             file (File): File manager
 
         Returns:
-            bool: True if file exists, otherwise False
+            bool: False if file exists, otherwise True
         """
-        return file.exists()
+        return not file.exists()
 
 
 class ReplaceStrategy(DownloadStrategy):
@@ -60,6 +60,8 @@ class ReplaceOnMetaFlagStrategy(DownloadStrategy):
             file (File): The file object to check against
 
         Returns:
-            bool: True if 'replace' flag in metadata is True, False otherwise
+            bool: True if 'replace' flag in metadata is True or file does not exists, False otherwise
         """
-        return obj.get('meta', {}).get('replace', False)
+        print(obj.file_path)
+        print(obj.meta.get('replace', False))
+        return not file.exists() or obj.meta.get('replace', False)

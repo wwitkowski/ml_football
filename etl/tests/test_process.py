@@ -3,7 +3,7 @@ from unittest.mock import MagicMock, patch
 import pytest
 import requests
 import pandas as pd
-from sqlalchemy import text
+from etl.download_strategy import DownloadStrategy
 
 from etl.downloader import Downloader
 from etl.files import File
@@ -21,6 +21,11 @@ def mock_file():
     return MagicMock(spec=File)
 
 
+@pytest.fixture
+def mock_strategy():
+    return MagicMock(spec=DownloadStrategy)
+
+
 def test_create_etl_default_object():
     etl = ETL()
     assert etl.sleep_time == 0
@@ -33,49 +38,32 @@ def test_create_etl_object(mock_file):
     assert etl.file_handler == mock_file
 
 
-def test_extract_file_not_exists_mode_append(mock_download_object, mock_file):
+def test_extract_download_required(mock_download_object, mock_file, mock_strategy):
     mock_download_object.download.return_value = 'example data'
-    mock_file.return_value.exists.return_value = False
+    mock_strategy.return_value.is_download_required.return_value = True
     mock_file.return_value.save.return_value = None
     test_queue = [mock_download_object]
     etl = ETL(file_handler=mock_file)
-    return_objs = list(etl.extract(test_queue, mode='append'))
+    return_objs = list(etl.extract(test_queue, strategy=mock_strategy()))
 
     assert len(return_objs) == 1
     mock_download_object.download.assert_called_once()
     handle = mock_file()
-    handle.exists.assert_called_once()
     handle.save.assert_called_once_with('example data')
 
 
-def test_extract_file_exists_mode_append(mock_download_object, mock_file):
+def test_extract_download_not_required(mock_download_object, mock_file, mock_strategy):
     mock_download_object.download.return_value = 'example data'
-    mock_file.return_value.exists.return_value = True
+    mock_strategy.return_value.is_download_required.return_value = False
     mock_file.return_value.save.return_value = None
     test_queue = [mock_download_object]
     etl = ETL(file_handler=mock_file)
-    return_objs = list(etl.extract(test_queue, mode='append'))
+    return_objs = list(etl.extract(test_queue, strategy=mock_strategy()))
 
     assert len(return_objs) == 0
     mock_download_object.download.assert_not_called()
     handle = mock_file()
-    handle.exists.assert_called_once()
     handle.save.assert_not_called()
-
-
-def test_extract_file_exists_mode_replace(mock_download_object, mock_file):
-    mock_download_object.download.return_value = 'example data'
-    mock_file.return_value.exists.return_value = True
-    mock_file.return_value.save.return_value = None
-    test_queue = [mock_download_object]
-    etl = ETL(file_handler=mock_file)
-    return_objs = list(etl.extract(test_queue, mode='replace'))
-
-    assert len(return_objs) == 1
-    mock_download_object.download.assert_called_once()
-    handle = mock_file()
-    handle.exists.assert_called_once()
-    handle.save.assert_called_once_with('example data')
 
 
 def test_extract_on_error(mock_download_object, mock_file):
@@ -84,40 +72,41 @@ def test_extract_on_error(mock_download_object, mock_file):
     mock_download_object.download.return_value = 'example data'
     mock_download_object.url = 'test_url.com'
     mock_download_object.download.side_effect = requests.HTTPError(response=mock_response)
-    mock_file.return_value.exists.return_value = True
-    mock_file.return_value.save.return_value = None
-    test_queue = [mock_download_object]
-    etl = ETL(file_handler=mock_file)
-    return_objs = list(etl.extract(test_queue, mode ='replace'))
-
-    assert len(return_objs) == 0
-    mock_download_object.download.assert_called_once()
-    handle = mock_file()
-    handle.exists.assert_called_once()
-    handle.save.assert_not_called()
-    
-
-def test_extract_w_callback(mock_download_object, mock_file):
-    def callback(content):
-        if content == 'example data 2':
-            return []
-        other_mock_download_object = MagicMock(spec=Downloader)
-        other_mock_download_object.file_path = 'test_file2.csv'
-        other_mock_download_object.download.return_value = 'example data 2'
-
-        return [other_mock_download_object]
-    
-    mock_download_object.download.return_value = 'example data'
     mock_file.return_value.exists.return_value = False
     mock_file.return_value.save.return_value = None
     test_queue = [mock_download_object]
     etl = ETL(file_handler=mock_file)
-    return_objs = list(etl.extract(test_queue, mode='append', callback=callback))
+    return_objs = list(etl.extract(test_queue))
+
+    assert len(return_objs) == 0
+    mock_download_object.download.assert_called_once()
+    handle = mock_file()
+    handle.save.assert_not_called()
+    
+
+def test_extract_w_callback(mock_download_object, mock_file, mock_strategy):
+    other_mock_download_object = MagicMock(spec=Downloader)
+    other_mock_download_object.file_path = 'test_file2.csv'
+    other_mock_download_object.download.return_value = 'example data 2'
+    
+    def callback(content):
+        if content == 'example data 2':
+            return []
+        return [other_mock_download_object]
+    
+    mock_strategy.return_value.is_download_required.return_value = True
+    mock_download_object.download.return_value = 'example data'
+    mock_file.return_value.exists.return_value = False
+    mock_file.return_value.save.return_value = None
+    mock_file.return_value.read.side_effect = ['example data', 'example data 2']
+    test_queue = [mock_download_object]
+    etl = ETL(file_handler=mock_file)
+    return_objs = list(etl.extract(test_queue, strategy=mock_strategy(), callback=callback))
 
     assert len(return_objs) == 2
     assert mock_download_object.download.call_count == 1
+    assert other_mock_download_object.download.call_count == 1
     handle = mock_file()
-    assert handle.exists.call_count == 2
     assert handle.save.call_count == 2
 
 
