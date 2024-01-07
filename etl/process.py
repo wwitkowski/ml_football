@@ -27,7 +27,7 @@ class ETL:
         file_handler (File): File handling class instance
     """
 
-    def __init__(self, sleep_time: int = 0, file_handler: Type[File] = File) -> None:
+    def __init__(self, sleep_time: int = 0) -> None:
         """
         Initialize ETL class.
 
@@ -38,13 +38,24 @@ class ETL:
         Returns:
             None
         """
+        self._queue = []
         self.sleep_time = sleep_time
-        self.file_handler = file_handler
+
+    def process_queue(
+            self, 
+            queue, 
+            strategy: DownloadStrategy = AppendStrategy(), 
+            reverse=False
+        ) -> Iterator[DownloaderObject]:
+        self._queue = queue
+        while self._queue:
+            queue_obj = self._queue.pop(-int(reverse))
+            if strategy.is_download_required(queue_obj):
+                yield queue_obj
 
     def extract(
             self,
-            queue: List[DownloaderObject],
-            strategy: DownloadStrategy = AppendStrategy(),
+            obj: DownloaderObject,
             session: Any | None = None,
             callback: Callable | None = None
         ) -> Iterator[DownloaderObject]:
@@ -52,30 +63,20 @@ class ETL:
         Extract data from a queue of downloaders.
 
         Parameters:
-            queue (List[DownloaderObject]): Queue of downloaders
-            mode (DownloadStrategy): Extraction strategy
+            obj (DownloaderObject): Downloader object
             session (Any | None): Extract session
             callback (Callable | None): Callback function for generating new download objects
 
         Yields:
             DownloaderObject: Object with successfully extracted data
         """
-        while queue:
-            obj: DownloaderObject = queue.pop()
-            file = self.file_handler(obj.file_path)
-            if strategy.is_download_required(obj, file):
-                try:
-                    content = obj.download(session)
-                except requests.exceptions.HTTPError as err:
-                    logger.warning('Error %d for %s', err.response.status_code, obj)
-                    time.sleep(self.sleep_time)
-                    continue
-                file.save(content)
-                time.sleep(self.sleep_time)
-                yield obj
-            if callback:
-                new_objects = callback(file.read())
-                queue.extend(new_objects)
+        content = obj.download(session)
+        obj.file.save(content)
+        time.sleep(self.sleep_time)
+        if callback:
+            new_objects = callback(obj.file.read())
+            self._queue.extend(new_objects)
+        return obj
 
 
     def transform(
@@ -97,8 +98,7 @@ class ETL:
         Returns:
             Tuple[DownloaderObject, Any]: Tuple containing the object and transformed data
         """
-        file = self.file_handler(obj.file_path)
-        data = file.read()
+        data = obj.file.read()
         if parser:
             data = parser.parse(data)
         if validation_pipeline:
@@ -127,13 +127,18 @@ class ETL:
         obj, data = dataset
         logger.info('UPLOADING: %s to %s.%s', obj, obj.schema, obj.table)
         if mode == 'replace':
-            session.execute(f"DELETE FROM {obj.schema}.{obj.table}")
-            data.to_sql(obj.table, session.bind, schema=obj.schema, if_exists='append')
+            placeholders = ', '.join([':' + col for col in data.columns])
+            columns = ', '.join(data.columns)
+            query = text(
+                f"INSERT INTO {obj.schema}.{obj.table} ({columns}) VALUES ({placeholders}) "
+                f"ON CONFLICT DO UPDATE SET {', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
+            )
+            session.execute(query, [dict(row) for row in data.to_dict(orient='records')])
         elif mode == 'append':
             placeholders = ', '.join([':' + col for col in data.columns])
             columns = ', '.join(data.columns)
             query = text(
                 f"INSERT INTO {obj.schema}.{obj.table} ({columns}) VALUES ({placeholders}) "
-                f"ON CONFLICT ON CONSTRAINT fd_unique_match DO UPDATE SET {', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
+                f"ON CONFLICT DO NOTHING"
             )
             session.execute(query, [dict(row) for row in data.to_dict(orient='records')])
