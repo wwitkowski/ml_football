@@ -1,8 +1,10 @@
+"""Football Data Co UK download DAG"""
 from datetime import datetime
+from docker.types import Mount
 from airflow import DAG
 from airflow.models import Variable
 from airflow.providers.docker.operators.docker import DockerOperator
-from docker.types import Mount 
+
 
 default_args = {
     'owner': 'airflow',
@@ -28,7 +30,7 @@ task = DockerOperator(
     auto_remove=True,
     mounts=[
         Mount(
-            source='/home/rpi_user/data', 
+            source='/home/rpi_user/data',
             target='/app/data',
             type='bind'
         )
@@ -38,5 +40,5 @@ task = DockerOperator(
         'POSTGRES_PASSWORD': Variable.get('POSTGRES_DATA_PASSWORD')
     },
     mount_tmp_dir=False,
-    command='python -m footballdata_co_uk.football_data_co_uk_seasonal'    
+    command='python -m footballdata_co_uk.football_data_co_uk_seasonal'
 )

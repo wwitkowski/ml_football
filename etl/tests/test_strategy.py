@@ -1,3 +1,4 @@
+# pylint: skip-file
 from unittest.mock import MagicMock, patch
 import pytest
 from etl.download_strategy import AppendStrategy, ReplaceOnMetaFlagStrategy, ReplaceStrategy
