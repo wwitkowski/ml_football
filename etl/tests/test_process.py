@@ -148,7 +148,7 @@ def test_load_replace(mock_download_object):
     executed_query = mock_session.execute.call_args.args[0]
     expected_query = (
         'INSERT INTO test_schema.test_table (col1, col2) VALUES (:col1, :col2) '
-        'ON CONFLICT ON CONTRAINT test_table_unique DO UPDATE SET col1 = EXCLUDED.col1, col2 = EXCLUDED.col2'
+        'ON CONFLICT ON CONSTRAINT test_table_unique DO UPDATE SET col1 = EXCLUDED.col1, col2 = EXCLUDED.col2'
     )
 
     assert str(executed_query) == expected_query
@@ -164,7 +164,7 @@ def test_load_append_mode(mock_download_object):
     executed_query = mock_session.execute.call_args.args[0]
     expected_query = (
         'INSERT INTO test_schema.test_table (col1, col2) VALUES (:col1, :col2) '
-        'ON CONFLICT ON CONTRAINT test_table_unique DO NOTHING'
+        'ON CONFLICT ON CONSTRAINT test_table_unique DO NOTHING'
     )
 
     assert str(executed_query) == expected_query

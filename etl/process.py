@@ -137,12 +137,12 @@ class ETL(Generic[DownloaderObject]):
         if mode == 'replace':
             query = text(
                 f"INSERT INTO {obj.schema}.{obj.table} ({columns}) VALUES ({placeholders}) "
-                f"ON CONFLICT ON CONTRAINT {obj.table}_unique DO UPDATE SET "
+                f"ON CONFLICT ON CONSTRAINT {obj.table}_unique DO UPDATE SET "
                 f"{', '.join(f'{col} = EXCLUDED.{col}' for col in data.columns)}"
             )
         elif mode == 'append':
             query = text(
                 f"INSERT INTO {obj.schema}.{obj.table} ({columns}) VALUES ({placeholders}) "
-                f"ON CONFLICT ON CONTRAINT {obj.table}_unique DO NOTHING"
+                f"ON CONFLICT ON CONSTRAINT {obj.table}_unique DO NOTHING"
             )
         session.execute(query, [dict(row) for row in data.to_dict(orient='records')])
