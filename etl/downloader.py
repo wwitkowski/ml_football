@@ -1,9 +1,11 @@
-"""Downlaoder Objects"""
+"""Downloader Objects"""
 from abc import ABC, abstractmethod
 import logging
 from typing import Any, Dict
+
 import requests
 
+from etl.files import File
 
 logger = logging.getLogger(__name__)
 
@@ -13,14 +15,13 @@ class Downloader(ABC):
     Abstract base class defining a downloader interface.
 
     Attributes:
-        file_path (str): The path to store the downloaded file.
+        file (File): File management object.
         table (str | None): The db table name (optional, can be None if data won't be loaded into db).
         schema (str | None): The db schema name (optional, can be None if data won't be loaded into db).
         meta (Dict | None): Metadata used for storing additional info about the object.
-
     """
-    def __init__(self, file_path: str, table: str | None, schema: str | None, meta: Dict | None) -> None:
-        self.file_path = file_path
+    def __init__(self, file: File, table: str | None, schema: str | None, meta: Dict | None) -> None:
+        self.file = file
         self.table = table
         self.schema = schema
         self.meta = meta or {}
@@ -45,7 +46,7 @@ class APIDownloader(Downloader):
     Attributes:
         method (str): The HTTP method used for the API request.
         url (str): The URL for the API endpoint.
-        file_path (str): The path to store the downloaded file.
+        file (File): File management object.
         table (str | None): The table name (optional, can be None if not applicable).
         schema (str | None): The schema name (optional, can be None if not applicable).
         meta (Dict | None): Metadata used for storing additional info about the object.
@@ -55,17 +56,16 @@ class APIDownloader(Downloader):
             self,
             method: str,
             url: str,
-            file_path: str,
+            file: File,
             table: str | None = None,
             schema: str | None = None,
             meta: Dict | None = None,
             **download_kwargs: dict
         ) -> None:
-        super().__init__(file_path, table=table, schema=schema, meta=meta)
+        super().__init__(file, table=table, schema=schema, meta=meta)
         self.method = method
         self.url = url
         self.download_kwargs = download_kwargs
-
 
     def __repr__(self) -> str:
         """
@@ -74,7 +74,7 @@ class APIDownloader(Downloader):
         Returns:
             str: Representation of the object.
         """
-        return f'APIDownloader(file_path={self.file_path}, method={self.method}, '\
+        return f'APIDownloader(file={self.file}, method={self.method}, ' \
             f'url={self.url}, db={self.schema}/{self.table})'
 
     def __str__(self) -> str:
@@ -84,7 +84,8 @@ class APIDownloader(Downloader):
         Returns:
             str: String representation of the object.
         """
-        return f'APIDownloader {self.url}@{self.file_path}'
+        db_str = f'@{self.schema}/{self.table}' if self.table is not None else ''
+        return f'APIDownloader {self.url}{db_str}'
 
     def download(self, session: requests.Session | None = None) -> bytes:
         """
