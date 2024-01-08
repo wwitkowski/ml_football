@@ -36,7 +36,7 @@ CREATE TABLE IF NOT EXISTS football_data.football_data_co_uk (
 	max_under numeric(5, 2) NULL,
 	avg_over numeric(5, 2) NULL,
 	avg_under numeric(5, 2) NULL,
-	CONSTRAINT fd_unique_match UNIQUE (season, league, match_date, home_team, away_team)
+	CONSTRAINT football_data_co_uk_unique UNIQUE (season, league, match_date, home_team, away_team)
 );
 
 GRANT USAGE ON SCHEMA football_data TO mlfootball_api;
