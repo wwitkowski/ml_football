@@ -1,13 +1,23 @@
 # pylint: skip-file
 from unittest.mock import MagicMock
+from unittest.mock import MagicMock
 import pytest
 import requests
 import pandas as pd
+from etl.download_strategy import DownloadStrategy
 from etl.download_strategy import DownloadStrategy
 
 from etl.downloader import Downloader
 from etl.files import File
 from etl.process import ETL
+
+
+@pytest.fixture
+def mock_file():
+    mock_file = MagicMock(spec=File)
+    mock_file.return_value.save.return_value = None
+    mock_file.return_value.read.return_value = 'example data'
+    return mock_file
 
 
 @pytest.fixture
@@ -72,6 +82,12 @@ def test_extract(mock_download_object):
     assert return_obj == mock_download_object
     mock_download_object.download.assert_called_once_with(None)
     mock_download_object.file.save.assert_called_once()
+    etl = ETL()
+    return_obj = etl.extract(mock_download_object)
+
+    assert return_obj == mock_download_object
+    mock_download_object.download.assert_called_once_with(None)
+    mock_download_object.file.save.assert_called_once()
 
 
 def test_extract_w_session(mock_download_object):
@@ -79,7 +95,13 @@ def test_extract_w_session(mock_download_object):
     etl = ETL()
     mock_session = MagicMock(spec=requests.Session)
     return_obj = etl.extract(mock_download_object, session=mock_session)
+    etl = ETL()
+    mock_session = MagicMock(spec=requests.Session)
+    return_obj = etl.extract(mock_download_object, session=mock_session)
 
+    assert return_obj == mock_download_object
+    mock_download_object.download.assert_called_once_with(mock_session)
+    mock_download_object.file.save.assert_called_once()
     assert return_obj == mock_download_object
     mock_download_object.download.assert_called_once_with(mock_session)
     mock_download_object.file.save.assert_called_once()
@@ -92,7 +114,13 @@ def test_extract_w_callback(mock_download_object):
     mock_download_object.download.return_value = 'example data'
     etl = ETL()
     return_obj = etl.extract(mock_download_object, callback=callback)
+    etl = ETL()
+    return_obj = etl.extract(mock_download_object, callback=callback)
 
+    assert return_obj == mock_download_object
+    mock_download_object.download.assert_called_once_with(None)
+    mock_download_object.file.save.assert_called_once()
+    assert len(etl._queue) == 2
     assert return_obj == mock_download_object
     mock_download_object.download.assert_called_once_with(None)
     mock_download_object.file.save.assert_called_once()
@@ -108,6 +136,7 @@ def test_transform(mock_download_object):
     mock_transform_pipeline.apply.return_value = 'parsed data'
 
     etl = ETL()
+    etl = ETL()
     result = etl.transform(
         mock_download_object,
         parser=mock_parser,
@@ -117,10 +146,11 @@ def test_transform(mock_download_object):
 
     assert result[0] == mock_download_object
     assert result[1] == 'parsed data'
+    assert result[0] == mock_download_object
+    assert result[1] == 'parsed data'
     mock_parser.parse.assert_called_once_with('example data')
     mock_validation_pipeline.validate.assert_called_once_with('parsed_data')
     mock_transform_pipeline.apply.assert_called_once_with('parsed_data')
-
 
 
 def test_transform_only_data(mock_download_object):
@@ -129,8 +159,11 @@ def test_transform_only_data(mock_download_object):
     mock_transform_pipeline = MagicMock()
 
     etl = ETL()
+    etl = ETL()
     result = etl.transform(mock_download_object)
 
+    assert result[0] == mock_download_object
+    assert result[1] == 'example data'
     assert result[0] == mock_download_object
     assert result[1] == 'example data'
     mock_parser.parse.assert_not_called()
@@ -142,7 +175,9 @@ def test_load_replace(mock_download_object):
     data = pd.DataFrame({'col1': [1, 2], 'col2': ['a', 'b']})
     mock_session = MagicMock()
 
+
     etl = ETL()
+    etl.load((mock_download_object, data), mock_session, mode='replace')
     etl.load((mock_download_object, data), mock_session, mode='replace')
 
     executed_query = mock_session.execute.call_args.args[0]
