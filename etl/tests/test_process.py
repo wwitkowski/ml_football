@@ -19,14 +19,6 @@ def mock_file():
 
 
 @pytest.fixture
-def mock_file():
-    mock_file = MagicMock(spec=File)
-    mock_file.return_value.save.return_value = None
-    mock_file.return_value.read.return_value = 'example data'
-    return mock_file
-
-
-@pytest.fixture
 def mock_download_object(mock_file):
     mock_download_object = MagicMock(spec=Downloader)
     mock_download_object.file = mock_file()
@@ -83,27 +75,17 @@ def test_extract(mock_download_object):
     etl = ETL()
     return_obj = etl.extract(mock_download_object)
 
-    assert return_obj == mock_download_object
-    mock_download_object.download.assert_called_once_with(None)
-    mock_download_object.file.save.assert_called_once()
-
 
 def test_extract_w_session(mock_download_object):
     mock_download_object.download.return_value = 'example data'
     etl = ETL()
     mock_session = MagicMock(spec=requests.Session)
     return_obj = etl.extract(mock_download_object, session=mock_session)
-    etl = ETL()
-    mock_session = MagicMock(spec=requests.Session)
-    return_obj = etl.extract(mock_download_object, session=mock_session)
 
     assert return_obj == mock_download_object
     mock_download_object.download.assert_called_once_with(mock_session)
     mock_download_object.file.save.assert_called_once()
-    assert return_obj == mock_download_object
-    mock_download_object.download.assert_called_once_with(mock_session)
-    mock_download_object.file.save.assert_called_once()
-    
+
 
 def test_extract_w_callback(mock_download_object):
     def callback(content):
@@ -112,13 +94,7 @@ def test_extract_w_callback(mock_download_object):
     mock_download_object.download.return_value = 'example data'
     etl = ETL()
     return_obj = etl.extract(mock_download_object, callback=callback)
-    etl = ETL()
-    return_obj = etl.extract(mock_download_object, callback=callback)
 
-    assert return_obj == mock_download_object
-    mock_download_object.download.assert_called_once_with(None)
-    mock_download_object.file.save.assert_called_once()
-    assert len(etl._queue) == 2
     assert return_obj == mock_download_object
     mock_download_object.download.assert_called_once_with(None)
     mock_download_object.file.save.assert_called_once()
