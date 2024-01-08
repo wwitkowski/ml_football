@@ -1,12 +1,10 @@
 # pylint: skip-file
 from unittest.mock import MagicMock
-from unittest.mock import MagicMock
 import pytest
 import requests
 import pandas as pd
-from etl.download_strategy import DownloadStrategy
-from etl.download_strategy import DownloadStrategy
 
+from etl.download_strategy import DownloadStrategy
 from etl.downloader import Downloader
 from etl.files import File
 from etl.process import ETL
