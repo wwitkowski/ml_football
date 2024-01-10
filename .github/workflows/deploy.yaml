@@ -11,6 +11,7 @@ jobs:
     - uses: actions/checkout@v2
     - name: Update codebase and deploy
       run: |
+        whoami
         cd /home/rpi_user/git_repos/ml_football
         git fetch origin main
         git pull origin main
