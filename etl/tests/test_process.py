@@ -72,8 +72,6 @@ def test_extract(mock_download_object):
     assert return_obj == mock_download_object
     mock_download_object.download.assert_called_once_with(None)
     mock_download_object.file.save.assert_called_once()
-    etl = ETL()
-    return_obj = etl.extract(mock_download_object)
 
 
 def test_extract_w_session(mock_download_object):
@@ -110,7 +108,6 @@ def test_transform(mock_download_object):
     mock_transform_pipeline.apply.return_value = 'parsed data'
 
     etl = ETL()
-    etl = ETL()
     result = etl.transform(
         mock_download_object,
         parser=mock_parser,
@@ -118,8 +115,6 @@ def test_transform(mock_download_object):
         validation_pipeline=mock_validation_pipeline
     )
 
-    assert result[0] == mock_download_object
-    assert result[1] == 'parsed data'
     assert result[0] == mock_download_object
     assert result[1] == 'parsed data'
     mock_parser.parse.assert_called_once_with('example data')
@@ -133,11 +128,8 @@ def test_transform_only_data(mock_download_object):
     mock_transform_pipeline = MagicMock()
 
     etl = ETL()
-    etl = ETL()
     result = etl.transform(mock_download_object)
 
-    assert result[0] == mock_download_object
-    assert result[1] == 'example data'
     assert result[0] == mock_download_object
     assert result[1] == 'example data'
     mock_parser.parse.assert_not_called()
@@ -151,7 +143,6 @@ def test_load_replace(mock_download_object):
 
 
     etl = ETL()
-    etl.load((mock_download_object, data), mock_session, mode='replace')
     etl.load((mock_download_object, data), mock_session, mode='replace')
 
     executed_query = mock_session.execute.call_args.args[0]
