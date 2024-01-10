@@ -51,10 +51,7 @@ def main() -> None:
     download_strategy = ReplaceOnMetaFlagStrategy()
     with Session.begin() as upload_session, requests.Session() as download_session:
         for item in etl.process_queue(objects, strategy=download_strategy):
-            try:
-                item_extracted = etl.extract(item, session=download_session)
-            except requests.exceptions.HTTPError:
-                continue
+            item_extracted = etl.extract(item, session=download_session)
             transform_pipeline = transform_base_pipeline.copy()\
                 .add_operation(pd.DataFrame.assign, season=item.meta['season'])
             item_transformed = etl.transform(
