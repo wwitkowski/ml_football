@@ -38,7 +38,10 @@ def main() -> None:
     download_strategy = ReplaceStrategy()
     with Session.begin() as upload_session, requests.Session() as download_session:
         for item in etl.process_queue(objects, strategy=download_strategy):
-            item_extracted = etl.extract(item, session=download_session)
+            try:
+                item_extracted = etl.extract(item, session=download_session)
+            except requests.exceptions.HTTPError:
+                continue
             item_transformed = etl.transform(
                 item_extracted,
                 parser = CSVDataParser(encoding='unicode_escape'),
