@@ -16,4 +16,5 @@ jobs:
         git fetch origin main
         git pull origin main
         docker compose down
+        docker compsoe build football_data_co_uk
         docker compose up -d
