@@ -9,13 +9,10 @@ jobs:
     runs-on: self-hosted
     steps:
     - uses: actions/checkout@v2
-    - name: Change dir
-      run: cd /home/rpi_user/git_repos/ml_football
-    - name: Update codebase
+    - name: Update codebase and deploy
       run: |
-        sudo git fetch origin main
-        sudo git pull origin main
-    - name: Deploy
-      run: |
-        docker compose down
-        docker compose up -d
+        cd /home/rpi_user/git_repos/ml_football
+        git fetch origin main
+        git pull origin main
+        docker-compose down
+        docker-compose up -d
