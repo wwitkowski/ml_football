@@ -84,7 +84,6 @@ class ETL(Generic[DownloaderObject]):
             self._queue.extend(new_objects)
         return obj
 
-
     def transform(
         self,
         obj: DownloaderObject,
