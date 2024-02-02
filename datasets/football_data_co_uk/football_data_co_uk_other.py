@@ -12,7 +12,7 @@ from etl.download_strategy import ReplaceStrategy
 from etl.files import File
 from etl.process import ETL
 from etl.downloader import APIDownloader
-from footballdata_co_uk.pipelines import get_transform_pipeline, get_validation_pipeline
+from datasets.football_data_co_uk.pipelines import get_transform_pipeline, get_validation_pipeline
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 
 def main() -> None:
     objects = []
-    with open(Path('footballdata_co_uk/configuration/footballdata_co_uk.yaml'), 'r') as handle:
+    with open(Path('datasets/configuration/footballdata_co_uk.yaml'), 'r') as handle:
         config = yaml.safe_load(handle)
 
     for league in config['new_dataset']['leagues']:

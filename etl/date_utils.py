@@ -4,7 +4,8 @@ from typing import Iterator, Tuple, List
 
 import pandas as pd
 
-from etl.exceptions import DataParserError
+from etl.exceptions import DataParserException
+
 
 def generate_seasons(start_date: datetime, end_date: datetime) -> Iterator[Tuple[str, str]]:
     """
@@ -25,6 +26,7 @@ def generate_seasons(start_date: datetime, end_date: datetime) -> Iterator[Tuple
             f"{year.strftime('%Y')}/{year_plus_one.strftime('%Y')}"
         )
 
+
 def generate_dates(start_date: datetime, end_date: datetime) -> Iterator[datetime]:
     """
     Yields dates between given dates.
@@ -38,6 +40,7 @@ def generate_dates(start_date: datetime, end_date: datetime) -> Iterator[datetim
     """
     for i in range(int((end_date - start_date).days) + 1):
         yield start_date + timedelta(i)
+
 
 def parse_dataframe_dates(data: pd.DataFrame, col: str, date_formats: List[str]) -> pd.DataFrame:
     """
@@ -61,4 +64,4 @@ def parse_dataframe_dates(data: pd.DataFrame, col: str, date_formats: List[str])
             return data
         except ValueError:
             pass
-    raise DataParserError(f'None of {date_formats} match {col} date format')
+    raise DataParserException(f'None of {date_formats} match {col} date format')

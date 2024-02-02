@@ -53,8 +53,8 @@ class File:
         if mode != 'rb':
             raise NotImplementedError('Currently only mode that reads bytes is supported.')
         try:
-            with open(self.path, mode, encoding=encoding) as f:
-                content = f.read()
+            with open(self.path, mode, encoding=encoding) as handle:
+                content = handle.read()
         except FileNotFoundError:
             logger.error('File %s not found.', self.path)
             raise
@@ -80,8 +80,8 @@ class File:
         self.path.parent.mkdir(parents=True, exist_ok=True)
         logger.info('Saving data to file %s.', self.path)
         try:
-            with open(self.path, mode, encoding=encoding) as f:
-                f.write(content)
+            with open(self.path, mode, encoding=encoding) as handle:
+                handle.write(content)
         except IOError as exc:
             logger.error('Error writing to file %s: %s', self.path, exc)
             raise

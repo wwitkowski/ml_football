@@ -16,31 +16,17 @@ def test_create_downloader():
     downloader = APIDownloader(
         'GET',
         'http://test_url.com',
-        mock_file,
-        'test_table',
-        'test_schema',
         headers={'header': 'test'}
     )
     assert downloader.method == 'GET'
     assert downloader.url == 'http://test_url.com'
-    assert downloader.file == mock_file
-    assert downloader.table == 'test_table'
-    assert downloader.schema == 'test_schema'
     assert downloader.download_kwargs == {'headers': {'header': 'test'}}
-    assert repr(downloader) ==\
-        f'APIDownloader(file={str(mock_file)}, method=GET, url=http://test_url.com, db=test_schema/test_table)'
-    assert str(downloader) == 'APIDownloader http://test_url.com@test_schema/test_table'
 
 
 def test_download(mock_request):
-    mock_file = MagicMock()
     downloader = APIDownloader(
         'GET',
-        'http://test_url.com',
-        mock_file,
-        'test_table',
-        'test_schema',
-        headers={'header': 'test'}
+        'http://test_url.com'
     )
     mock_response = Mock()
     mock_response.status_code = 200
@@ -53,14 +39,9 @@ def test_download(mock_request):
 
 
 def test_download_fail(mock_request):
-    mock_file = MagicMock()
     downloader = APIDownloader(
         'GET',
-        'http://test_url.com',
-        mock_file,
-        'test_table',
-        'test_schema',
-        headers={'header': 'test'}
+        'http://test_url.com'
     )
     mock_response = Mock()
     mock_response.status_code = 404

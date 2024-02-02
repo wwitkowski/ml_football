@@ -1,5 +1,4 @@
 # pylint: skip-file
-import pytest
 from etl.transform import TransformPipeline
 
 

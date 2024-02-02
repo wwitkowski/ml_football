@@ -207,4 +207,4 @@ services:
   football_data_co_uk:
     build: 
       context: .
-      dockerfile: footballdata_co_uk/Dockerfile
+      dockerfile: datasets/Dockerfile

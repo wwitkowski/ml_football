@@ -57,23 +57,3 @@ class ReplaceStrategy(DownloadStrategy):
             bool: Always returns True
         """
         return True
-
-
-class ReplaceOnMetaFlagStrategy(DownloadStrategy):
-    """
-    Download strategy for replacing data based on metadata flag.
-
-    This strategy checks if the 'replace' flag in download object metadata is True 
-    or if the file doesn't exist.
-    """
-    def is_download_required(self, obj: Downloader) -> bool:
-        """
-        Determines whether a download is required for a 'replace on meta flag' strategy.
-
-        Args:
-            obj (Downloader): The object representing the downloader
-
-        Returns:
-            bool: True if 'replace' flag in metadata is True or file does not exist, False otherwise
-        """
-        return not obj.file.exists() or obj.meta.get('replace', False)

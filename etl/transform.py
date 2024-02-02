@@ -49,6 +49,6 @@ class TransformPipeline:
             TransformPipeline: Copy of the current pipeline.
         """
         pipe = TransformPipeline()
-        for op, args, kwargs in self._operations:
-            pipe.add_operation(op, *args, **kwargs)
+        for operation, args, kwargs in self._operations:
+            pipe.add_operation(operation, *args, **kwargs)
         return pipe

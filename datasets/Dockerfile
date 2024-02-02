@@ -10,4 +10,4 @@ RUN mkdir /app/data/
 
 COPY etl/ ./etl
 COPY database/ ./database/
-COPY footballdata_co_uk ./footballdata_co_uk
+COPY datasets ./datasets

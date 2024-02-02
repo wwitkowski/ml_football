@@ -14,7 +14,7 @@ from etl.download_strategy import ReplaceOnMetaFlagStrategy
 from etl.files import File
 from etl.process import ETL
 from etl.downloader import APIDownloader
-from footballdata_co_uk.pipelines import get_transform_pipeline, get_validation_pipeline
+from datasets.football_data_co_uk.pipelines import get_transform_pipeline, get_validation_pipeline
 
 
 logging.basicConfig(level=logging.INFO)
@@ -26,7 +26,7 @@ def main() -> None:
     start_date = datetime(2000, 7, 1)
     end_date = datetime.today()
     objects = []
-    with open(Path('footballdata_co_uk/configuration/footballdata_co_uk.yaml'), 'r') as handle:
+    with open(Path('datasets/configuration/footballdata_co_uk.yaml'), 'r') as handle:
         config = yaml.safe_load(handle)
 
     seasons = list(generate_seasons(start_date, end_date))

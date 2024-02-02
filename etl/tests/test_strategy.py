@@ -1,7 +1,7 @@
 # pylint: skip-file
 from unittest.mock import MagicMock, patch
 import pytest
-from etl.download_strategy import AppendStrategy, ReplaceOnMetaFlagStrategy, ReplaceStrategy
+from etl.download_strategy import AppendStrategy, ReplaceStrategy
 from etl.downloader import Downloader
 
 from etl.files import File
@@ -37,27 +37,3 @@ def test_replace_strategy(mock_download_object):
     with patch('etl.files.File.exists', return_value=True):
         result = strategy.is_download_required(mock_download_object)
         assert result == True
-
-
-def test_replaceonmetaflag_strategy(mock_download_object):
-    strategy = ReplaceOnMetaFlagStrategy()
-
-    with patch('etl.files.File.exists', return_value=False):
-        mock_download_object.meta = {'replace': False}
-        result = strategy.is_download_required(mock_download_object)
-        assert result == True
-
-    with patch('etl.files.File.exists', return_value=False):
-        mock_download_object.meta = {'replace': True}
-        result = strategy.is_download_required(mock_download_object)
-        assert result == True
-
-    with patch('etl.files.File.exists', return_value=True):
-        mock_download_object.meta = {'replace': True}
-        result = strategy.is_download_required(mock_download_object)
-        assert result == True
-
-    with patch('etl.files.File.exists', return_value=True):
-        mock_download_object.meta = {'replace': False}
-        result = strategy.is_download_required(mock_download_object)
-        assert result == False

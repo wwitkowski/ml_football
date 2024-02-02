@@ -3,7 +3,7 @@ import pytest
 from datetime import datetime
 import pandas as pd
 from etl.date_utils import generate_seasons, generate_dates, parse_dataframe_dates
-from etl.exceptions import DataParserError  # Replace 'your_module_name' with the actual module name where the code resides
+from etl.exceptions import DataParserException
 
 
 @pytest.fixture
@@ -36,11 +36,11 @@ def test_parse_dataframe_dates_with_valid_date_format(sample_data):
 
 def test_parse_dataframe_dates_with_invalid_date_format(sample_data):
     date_formats = ['%d-%m-%Y']
-    with pytest.raises(DataParserError):
+    with pytest.raises(DataParserException):
         parse_dataframe_dates(sample_data, 'date_col', date_formats)
 
 
 def test_parse_dataframe_dates_with_no_matching_date_format(sample_data):
     date_formats = ['%d-%m-%Y', '%Y/%m/%d']
-    with pytest.raises(DataParserError):
+    with pytest.raises(DataParserException):
         parse_dataframe_dates(sample_data, 'date_col', date_formats)
